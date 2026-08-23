@@ -1,0 +1,2 @@
+import AuthForm from"../../components/AuthForm";import SiteChrome from"../../components/SiteChrome";
+export default function Login(){return <SiteChrome><main className="authPage"><div><span className="eyebrow">خوش آمدید</span><h1>ورود به جانِبی</h1><p>سفارش‌ها، علاقه‌مندی‌ها و آدرس‌های شما یک‌جا هستند.</p><AuthForm mode="login"/><a href="/forgot-password" className="muted">رمز عبور را فراموش کرده‌اید؟</a></div></main></SiteChrome>}

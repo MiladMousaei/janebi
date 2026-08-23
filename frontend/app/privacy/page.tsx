@@ -1,0 +1,1 @@
+import P from"../../components/ContentPage";export default function Page(){return <P title="حریم خصوصی" kicker="اعتماد شما"><p>اطلاعات حساب و سفارش فقط برای ارائه خدمت، پشتیبانی و ارسال استفاده می‌شود. رمزها با hashing استاندارد Django ذخیره می‌شوند و رمز خام نگهداری نمی‌شود.</p></P>}

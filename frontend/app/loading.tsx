@@ -1,0 +1,1 @@
+export default function Loading(){return <div className="loadingPage"><div className="skeletonLine"/><div className="skeletonHero"/><div className="skeletonGrid">{Array.from({length:4}).map((_,i)=><div key={i}/>)}</div></div>}

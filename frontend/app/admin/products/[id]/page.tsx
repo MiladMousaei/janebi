@@ -1,0 +1,2 @@
+import Link from "next/link";import AdminShell from "../../../../components/AdminShell";import AdminProductForm from "../../../../components/AdminProductForm";
+export default async function Edit({params}:{params:Promise<{id:string}>}){const{id}=await params;return <AdminShell title="ویرایش محصول" eyebrow={`شناسه محصول ${id}`} action={<Link className="button ghost" href="/admin/products">بازگشت</Link>}><AdminProductForm productId={id}/></AdminShell>}

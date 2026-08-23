@@ -1,0 +1,2 @@
+import type{Product}from"../lib/types";import ProductCard from"./ProductCard";
+export default function ProductSection({title,kicker,products}:{title:string;kicker:string;products:Product[]}){if(!products.length)return null;return <section className="section shell productsSection"><div className="sectionHead"><div><span>{kicker}</span><h2>{title}</h2></div><a href="/shop">مشاهده همه ←</a></div><div className="productGrid">{products.map((p,index)=><ProductCard key={p.id} product={p} index={index}/>)}</div></section>}

@@ -1,0 +1,2 @@
+import SiteChrome from"../../../../components/SiteChrome";
+export default async function OrderDetail({params}:{params:Promise<{id:string}>}){const{id}=await params;return <SiteChrome><main className="shell dashboardPage"><div className="pageTitle"><span>جزئیات سفارش</span><h1>{id}</h1></div><p className="muted">برای حفظ امنیت، جزئیات این سفارش پس از ورود از API حساب شما دریافت می‌شود.</p><a className="button ghost" href="/account/orders">بازگشت به سفارش‌ها</a></main></SiteChrome>}

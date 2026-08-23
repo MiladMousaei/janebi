@@ -1,0 +1,6 @@
+export type Brand={id:number;name:string;slug:string;logo?:string|null};
+export type Category={id:number;name:string;slug:string;image?:string|null;cover_image?:string|null;product_count?:number};
+export type Variant={id:number;sku:string;price:number|null;effective_price:number;stock:number;attributes:{id:number;attribute_name:string;attribute_slug:string;value:string}[]};
+export type Product={id:number;name:string;slug:string;sku:string;short_description:string;description?:string;specifications?:Record<string,string>;seo_title?:string;seo_description?:string;brand:Brand;category:Category;base_price:number;compare_at_price:number|null;discount_percent:number;primary_image:string|null;average_rating:number;total_stock:number;is_active:boolean;is_new:boolean;is_featured:boolean;sold_count:number;view_count:number;images?:{id:number;image:string|null;external_url:string;url:string|null;alt_text:string;is_primary:boolean}[];variants?:Variant[];reviews?:{id:number;user_name:string;rating:number;title:string;comment:string;created_at:string}[];related?:Product[]};
+export type Paginated<T>={count:number;next:string|null;previous:string|null;results:T[]};
+export type HomeData={featured:Product[];new:Product[];best_sellers:Product[];offers:Product[]};

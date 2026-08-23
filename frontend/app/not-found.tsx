@@ -1,0 +1,1 @@
+import SiteChrome from"../components/SiteChrome";export default function NotFound(){return <SiteChrome><main className="errorPage"><span>۴۰۴</span><h1>این صفحه پیدا نشد</h1><a className="button primary" href="/">بازگشت به خانه</a></main></SiteChrome>}

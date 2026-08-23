@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-janebi}
+      POSTGRES_USER: ${POSTGRES_USER:-janebi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-janebi-dev-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-janebi} -d ${POSTGRES_DB:-janebi}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-janebi}:${POSTGRES_PASSWORD:-janebi-dev-password}@postgres:5432/${POSTGRES_DB:-janebi}
+    volumes:
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      INTERNAL_API_URL: http://backend:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+volumes:
+  postgres_data:
+  media_data:

@@ -1,0 +1,2 @@
+import CatalogPage from "../../components/CatalogPage";
+export default async function Shop({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) { const raw = await searchParams; const params: Record<string, string | undefined> = {}; Object.entries(raw).forEach(([k, v]) => { if (typeof v === "string") params[k] = v; }); return <CatalogPage title="همه محصولات" path="/shop" params={params}/>; }

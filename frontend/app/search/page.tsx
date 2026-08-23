@@ -1,0 +1,2 @@
+import CatalogPage from "../../components/CatalogPage";
+export default async function Search({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) { const raw = await searchParams; const q = raw.q || raw.search || ""; const params: Record<string, string | undefined> = { ...raw, search: q }; delete params.q; return <CatalogPage title={q ? `نتایج جستجو برای «${q}»` : "جستجوی محصولات"} path="/search" params={params}/>; }

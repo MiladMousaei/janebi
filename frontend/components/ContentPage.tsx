@@ -1,0 +1,1 @@
+import SiteChrome from"./SiteChrome";export default function ContentPage({title,kicker,children}:{title:string;kicker:string;children:React.ReactNode}){return <SiteChrome><main className="shell contentPage"><span className="eyebrow">{kicker}</span><h1>{title}</h1><div>{children}</div></main></SiteChrome>}

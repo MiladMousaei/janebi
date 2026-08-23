@@ -1,0 +1,3712 @@
+openapi: 3.0.3
+info:
+  title: Janebi Store API
+  version: 1.0.0
+  description: API فروشگاه جانبی
+paths:
+  /api/v1/admin/inventory/:
+    get:
+      operationId: api_v1_admin_inventory_list
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - in: query
+        name: product
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryList'
+          description: ''
+  /api/v1/admin/inventory/{id}/:
+    get:
+      operationId: api_v1_admin_inventory_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این product variant را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventory'
+          description: ''
+    patch:
+      operationId: api_v1_admin_inventory_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این product variant را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedInventory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedInventory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedInventory'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventory'
+          description: ''
+  /api/v1/admin/stats/:
+    get:
+      operationId: api_v1_admin_stats_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/admin/users/:
+    get:
+      operationId: api_v1_admin_users_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminUserList'
+          description: ''
+  /api/v1/admin/users/{id}/:
+    get:
+      operationId: api_v1_admin_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این کاربر را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+          description: ''
+  /api/v1/auth/addresses/:
+    get:
+      operationId: api_v1_auth_addresses_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAddressList'
+          description: ''
+    post:
+      operationId: api_v1_auth_addresses_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Address'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Address'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+  /api/v1/auth/addresses/{id}/:
+    get:
+      operationId: api_v1_auth_addresses_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این address را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    put:
+      operationId: api_v1_auth_addresses_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این address را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Address'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Address'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    patch:
+      operationId: api_v1_auth_addresses_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این address را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAddress'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAddress'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAddress'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+    delete:
+      operationId: api_v1_auth_addresses_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این address را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/change-password/:
+    post:
+      operationId: api_v1_auth_change_password_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordChange'
+          description: ''
+  /api/v1/auth/login/:
+    post:
+      operationId: api_v1_auth_login_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: api_v1_auth_logout_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/profile/:
+    get:
+      operationId: api_v1_auth_profile_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: api_v1_auth_profile_update
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: api_v1_auth_profile_partial_update
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/refresh/:
+    post:
+      operationId: api_v1_auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: api_v1_auth_register_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /api/v1/brands/:
+    get:
+      operationId: api_v1_brands_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBrandList'
+          description: ''
+    post:
+      operationId: api_v1_brands_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Brand'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+  /api/v1/brands/{slug}/:
+    get:
+      operationId: api_v1_brands_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+    put:
+      operationId: api_v1_brands_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Brand'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+    patch:
+      operationId: api_v1_brands_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBrand'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBrand'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBrand'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+    delete:
+      operationId: api_v1_brands_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cart/:
+    get:
+      operationId: api_v1_cart_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cart'
+          description: ''
+  /api/v1/cart/{id}/item/:
+    patch:
+      operationId: api_v1_cart_item_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCart'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCart'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCart'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+    delete:
+      operationId: api_v1_cart_item_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cart/add/:
+    post:
+      operationId: api_v1_cart_add_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cart'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Cart'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Cart'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+  /api/v1/categories/:
+    get:
+      operationId: api_v1_categories_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+    post:
+      operationId: api_v1_categories_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/categories/{slug}/:
+    get:
+      operationId: api_v1_categories_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: api_v1_categories_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: api_v1_categories_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: api_v1_categories_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/coupons/:
+    get:
+      operationId: api_v1_coupons_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCouponList'
+          description: ''
+    post:
+      operationId: api_v1_coupons_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Coupon'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Coupon'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Coupon'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+  /api/v1/coupons/{id}/:
+    get:
+      operationId: api_v1_coupons_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این coupon را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+    put:
+      operationId: api_v1_coupons_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این coupon را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Coupon'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Coupon'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Coupon'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+    patch:
+      operationId: api_v1_coupons_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این coupon را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCoupon'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCoupon'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCoupon'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+    delete:
+      operationId: api_v1_coupons_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این coupon را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/notifications/:
+    get:
+      operationId: api_v1_notifications_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+  /api/v1/notifications/{id}/:
+    get:
+      operationId: api_v1_notifications_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این notification را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/orders/:
+    get:
+      operationId: api_v1_orders_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderList'
+          description: ''
+  /api/v1/orders/{order_number}/:
+    get:
+      operationId: api_v1_orders_retrieve
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{order_number}/cancel/:
+    post:
+      operationId: api_v1_orders_cancel_create
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Order'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/{order_number}/set_status/:
+    patch:
+      operationId: api_v1_orders_set_status_partial_update
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOrder'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrder'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrder'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/orders/checkout/:
+    post:
+      operationId: api_v1_orders_checkout_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Order'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/payments/:
+    get:
+      operationId: api_v1_payments_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentList'
+          description: ''
+  /api/v1/payments/{id}/:
+    get:
+      operationId: api_v1_payments_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این payment را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/payments/create_payment/:
+    post:
+      operationId: api_v1_payments_create_payment_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Payment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/payments/mock/{authority}/:
+    get:
+      operationId: api_v1_payments_mock_retrieve
+      parameters:
+      - in: path
+        name: authority
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+    post:
+      operationId: api_v1_payments_mock_create
+      parameters:
+      - in: path
+        name: authority
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/products/:
+    get:
+      operationId: api_v1_products_list
+      parameters:
+      - in: query
+        name: availability
+        schema:
+          type: boolean
+      - in: query
+        name: brand
+        schema:
+          type: string
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: color
+        schema:
+          type: string
+      - in: query
+        name: discount
+        schema:
+          type: boolean
+      - in: query
+        name: max_price
+        schema:
+          type: integer
+      - in: query
+        name: min_price
+        schema:
+          type: integer
+      - in: query
+        name: model
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - in: query
+        name: rating
+        schema:
+          type: number
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductListList'
+          description: ''
+    post:
+      operationId: api_v1_products_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductWrite'
+          description: ''
+  /api/v1/products/{slug}/:
+    get:
+      operationId: api_v1_products_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+          description: ''
+    put:
+      operationId: api_v1_products_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductWrite'
+          description: ''
+    patch:
+      operationId: api_v1_products_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductWrite'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductWrite'
+          description: ''
+    delete:
+      operationId: api_v1_products_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/products/home/:
+    get:
+      operationId: api_v1_products_home_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+          description: ''
+  /api/v1/reviews/:
+    get:
+      operationId: api_v1_reviews_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReviewList'
+          description: ''
+    post:
+      operationId: api_v1_reviews_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Review'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Review'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+  /api/v1/reviews/{id}/:
+    get:
+      operationId: api_v1_reviews_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این review را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    put:
+      operationId: api_v1_reviews_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این review را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Review'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Review'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    patch:
+      operationId: api_v1_reviews_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این review را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReview'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    delete:
+      operationId: api_v1_reviews_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این review را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/shipping-methods/:
+    get:
+      operationId: api_v1_shipping_methods_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: کدام فیلد باید هنگام مرتب‌سازی نتایج استفاده شود.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: یک شماره صفحه‌ در مجموعه نتایج صفحه‌بندی شده.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: تعداد نتایج برای نمایش در هر صفحه.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: یک عبارت جستجو.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShippingMethodList'
+          description: ''
+  /api/v1/shipping-methods/{id}/:
+    get:
+      operationId: api_v1_shipping_methods_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: یک مقداد عدد یکتا که این shipping method را شناسایی میکند.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingMethod'
+          description: ''
+  /api/v1/wishlist/:
+    get:
+      operationId: api_v1_wishlist_list
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WishlistItem'
+          description: ''
+  /api/v1/wishlist/{id}/remove/:
+    delete:
+      operationId: api_v1_wishlist_remove_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/wishlist/add/:
+    post:
+      operationId: api_v1_wishlist_add_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WishlistItem'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WishlistItem'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WishlistItem'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistItem'
+          description: ''
+components:
+  schemas:
+    Address:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        recipient_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 15
+        province:
+          type: string
+          maxLength: 80
+        city:
+          type: string
+          maxLength: 80
+        address:
+          type: string
+        postal_code:
+          type: string
+          maxLength: 20
+        plaque:
+          type: string
+          maxLength: 20
+        unit:
+          type: string
+          maxLength: 20
+        is_default:
+          type: boolean
+      required:
+      - address
+      - city
+      - created_at
+      - id
+      - phone
+      - postal_code
+      - province
+      - recipient_name
+      - updated_at
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          title: نام
+          maxLength: 150
+        last_name:
+          type: string
+          title: نام خانوادگی
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 15
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        is_staff:
+          type: boolean
+          readOnly: true
+          title: وضعیت کارمندی
+          description: نشان می‌دهد که آیا این کاربر می‌تواند وارد این وبگاه مدیریت
+            شود یا خیر.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاریخ پیوستن
+        is_active:
+          type: boolean
+          title: فعال
+          description: نشان می‌دهد که آیا این کاربر اجازهٔ فعالیت دارد یا خیر. به
+            جای حذف کاربر این تیک را بردارید.
+        order_count:
+          type: integer
+          readOnly: true
+      required:
+      - date_joined
+      - email
+      - id
+      - is_staff
+      - order_count
+      - phone
+    AttributeValue:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        attribute:
+          type: integer
+        attribute_name:
+          type: string
+          readOnly: true
+        attribute_slug:
+          type: string
+          readOnly: true
+        value:
+          type: string
+          maxLength: 120
+      required:
+      - attribute
+      - attribute_name
+      - attribute_slug
+      - id
+      - value
+    Brand:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          pattern: ^[-\w]+$
+          maxLength: 140
+        logo:
+          type: string
+          format: uri
+          pattern: (?:jpg|jpeg|png|webp)$
+        description:
+          type: string
+        is_active:
+          type: boolean
+      required:
+      - created_at
+      - id
+      - name
+      - slug
+      - updated_at
+    Cart:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+          readOnly: true
+        subtotal:
+          type: string
+          readOnly: true
+        item_count:
+          type: string
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - item_count
+      - items
+      - subtotal
+      - updated_at
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        variant:
+          type: integer
+          nullable: true
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+        product_detail:
+          allOf:
+          - $ref: '#/components/schemas/ProductList'
+          readOnly: true
+        variant_detail:
+          allOf:
+          - $ref: '#/components/schemas/Variant'
+          readOnly: true
+        unit_price:
+          type: string
+          readOnly: true
+        total_price:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - product
+      - product_detail
+      - total_price
+      - unit_price
+      - variant_detail
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          pattern: ^[-\w]+$
+          maxLength: 140
+        parent:
+          type: integer
+          nullable: true
+        image:
+          type: string
+          format: uri
+          pattern: (?:jpg|jpeg|png|webp)$
+        description:
+          type: string
+        is_active:
+          type: boolean
+        product_count:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - name
+      - product_count
+      - slug
+    Coupon:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        code:
+          type: string
+          maxLength: 40
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        minimum_order_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        maximum_discount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        usage_limit:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        user_usage_limit:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        start_date:
+          type: string
+          format: date-time
+        expiration_date:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+        used_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - code
+      - created_at
+      - discount_type
+      - discount_value
+      - expiration_date
+      - id
+      - start_date
+      - updated_at
+    DiscountTypeEnum:
+      enum:
+      - percentage
+      - fixed
+      type: string
+      description: |-
+        * `percentage` - درصدی
+        * `fixed` - مبلغ ثابت
+    Image:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        image:
+          type: string
+          format: uri
+          pattern: (?:jpg|jpeg|png|webp)$
+        alt_text:
+          type: string
+          maxLength: 220
+        is_primary:
+          type: boolean
+        sort_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - id
+      - image
+    Inventory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        product_name:
+          type: string
+          readOnly: true
+        sku:
+          type: string
+          maxLength: 80
+        price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        stock:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        low_stock_threshold:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+        attributes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - attributes
+      - id
+      - product
+      - product_name
+      - sku
+    Login:
+      type: object
+      properties:
+        identifier:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - identifier
+      - password
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        kind:
+          type: string
+          maxLength: 40
+        title:
+          type: string
+          maxLength: 150
+        message:
+          type: string
+        is_read:
+          type: boolean
+        user:
+          type: integer
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - kind
+      - message
+      - title
+      - updated_at
+      - user
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        order_number:
+          type: string
+          readOnly: true
+        shipping_address_snapshot: {}
+        shipping_method:
+          type: integer
+        shipping_method_name:
+          type: string
+          readOnly: true
+        subtotal:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        discount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        shipping_cost:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        final_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+        payment_status:
+          $ref: '#/components/schemas/PaymentStatusEnum'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - final_amount
+      - id
+      - items
+      - order_number
+      - shipping_address_snapshot
+      - shipping_method
+      - shipping_method_name
+      - subtotal
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product_name:
+          type: string
+          maxLength: 220
+        sku:
+          type: string
+          maxLength: 80
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        unit_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        total_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        order:
+          type: integer
+        product:
+          type: integer
+        variant:
+          type: integer
+          nullable: true
+      required:
+      - id
+      - order
+      - product
+      - product_name
+      - quantity
+      - sku
+      - total_price
+      - unit_price
+    OrderStatusEnum:
+      enum:
+      - pending
+      - paid
+      - processing
+      - shipped
+      - delivered
+      - cancelled
+      - returned
+      type: string
+      description: |-
+        * `pending` - pending
+        * `paid` - paid
+        * `processing` - processing
+        * `shipped` - shipped
+        * `delivered` - delivered
+        * `cancelled` - cancelled
+        * `returned` - returned
+    PaginatedAddressList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+    PaginatedAdminUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUser'
+    PaginatedBrandList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Brand'
+    PaginatedCategoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedCouponList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coupon'
+    PaginatedInventoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Inventory'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedOrderList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+    PaginatedPaymentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+    PaginatedProductListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductList'
+    PaginatedReviewList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+    PaginatedShippingMethodList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShippingMethod'
+    PasswordChange:
+      type: object
+      properties:
+        old_password:
+          type: string
+          writeOnly: true
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+      required:
+      - new_password
+      - old_password
+    PatchedAddress:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        recipient_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 15
+        province:
+          type: string
+          maxLength: 80
+        city:
+          type: string
+          maxLength: 80
+        address:
+          type: string
+        postal_code:
+          type: string
+          maxLength: 20
+        plaque:
+          type: string
+          maxLength: 20
+        unit:
+          type: string
+          maxLength: 20
+        is_default:
+          type: boolean
+    PatchedBrand:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          pattern: ^[-\w]+$
+          maxLength: 140
+        logo:
+          type: string
+          format: uri
+          pattern: (?:jpg|jpeg|png|webp)$
+        description:
+          type: string
+        is_active:
+          type: boolean
+    PatchedCart:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+          readOnly: true
+        subtotal:
+          type: string
+          readOnly: true
+        item_count:
+          type: string
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          pattern: ^[-\w]+$
+          maxLength: 140
+        parent:
+          type: integer
+          nullable: true
+        image:
+          type: string
+          format: uri
+          pattern: (?:jpg|jpeg|png|webp)$
+        description:
+          type: string
+        is_active:
+          type: boolean
+        product_count:
+          type: integer
+          readOnly: true
+    PatchedCoupon:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        code:
+          type: string
+          maxLength: 40
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        minimum_order_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        maximum_discount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        usage_limit:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        user_usage_limit:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        start_date:
+          type: string
+          format: date-time
+        expiration_date:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+        used_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+    PatchedInventory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        product_name:
+          type: string
+          readOnly: true
+        sku:
+          type: string
+          maxLength: 80
+        price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        stock:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        low_stock_threshold:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+        attributes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+    PatchedOrder:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        order_number:
+          type: string
+          readOnly: true
+        shipping_address_snapshot: {}
+        shipping_method:
+          type: integer
+        shipping_method_name:
+          type: string
+          readOnly: true
+        subtotal:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        discount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        shipping_cost:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        final_amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        status:
+          $ref: '#/components/schemas/OrderStatusEnum'
+        payment_status:
+          $ref: '#/components/schemas/PaymentStatusEnum'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedProductWrite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 220
+        slug:
+          type: string
+          pattern: ^[-\w]+$
+          maxLength: 240
+        short_description:
+          type: string
+          maxLength: 320
+        description:
+          type: string
+        specifications: {}
+        base_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        compare_at_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        sku:
+          type: string
+          maxLength: 80
+        is_active:
+          type: boolean
+        is_featured:
+          type: boolean
+        is_new:
+          type: boolean
+        view_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        sold_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        seo_title:
+          type: string
+          maxLength: 70
+        seo_description:
+          type: string
+          maxLength: 170
+        category:
+          type: integer
+        brand:
+          type: integer
+    PatchedReview:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        user_name:
+          type: string
+          readOnly: true
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        title:
+          type: string
+          maxLength: 160
+        comment:
+          type: string
+        is_approved:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          title: نام
+          maxLength: 150
+        last_name:
+          type: string
+          title: نام خانوادگی
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 15
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        is_staff:
+          type: boolean
+          readOnly: true
+          title: وضعیت کارمندی
+          description: نشان می‌دهد که آیا این کاربر می‌تواند وارد این وبگاه مدیریت
+            شود یا خیر.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاریخ پیوستن
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        order:
+          type: integer
+        amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        provider:
+          type: string
+          maxLength: 30
+        authority:
+          type: string
+          maxLength: 80
+        transaction_id:
+          type: string
+          maxLength: 100
+        status:
+          $ref: '#/components/schemas/StatusA4bEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        paid_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - amount
+      - authority
+      - created_at
+      - id
+      - order
+    PaymentStatusEnum:
+      enum:
+      - pending
+      - paid
+      - failed
+      - refunded
+      type: string
+      description: |-
+        * `pending` - pending
+        * `paid` - paid
+        * `failed` - failed
+        * `refunded` - refunded
+    ProductDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 220
+        slug:
+          type: string
+          pattern: ^[-\w]+$
+          maxLength: 240
+        short_description:
+          type: string
+          maxLength: 320
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/Brand'
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        base_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        compare_at_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        discount_percent:
+          type: integer
+          readOnly: true
+        primary_image:
+          type: string
+          nullable: true
+          readOnly: true
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+        total_stock:
+          type: integer
+          readOnly: true
+        is_new:
+          type: boolean
+        is_featured:
+          type: boolean
+        description:
+          type: string
+        specifications: {}
+        sku:
+          type: string
+          maxLength: 80
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+          readOnly: true
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+          readOnly: true
+        reviews:
+          type: string
+          readOnly: true
+        related:
+          type: string
+          readOnly: true
+        seo_title:
+          type: string
+          maxLength: 70
+        seo_description:
+          type: string
+          maxLength: 170
+      required:
+      - average_rating
+      - base_price
+      - brand
+      - category
+      - description
+      - discount_percent
+      - id
+      - images
+      - name
+      - primary_image
+      - related
+      - reviews
+      - sku
+      - slug
+      - total_stock
+      - variants
+    ProductList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 220
+        slug:
+          type: string
+          pattern: ^[-\w]+$
+          maxLength: 240
+        short_description:
+          type: string
+          maxLength: 320
+        brand:
+          allOf:
+          - $ref: '#/components/schemas/Brand'
+          readOnly: true
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        base_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        compare_at_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        discount_percent:
+          type: integer
+          readOnly: true
+        primary_image:
+          type: string
+          nullable: true
+          readOnly: true
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+        total_stock:
+          type: integer
+          readOnly: true
+        is_new:
+          type: boolean
+        is_featured:
+          type: boolean
+      required:
+      - average_rating
+      - base_price
+      - brand
+      - category
+      - discount_percent
+      - id
+      - name
+      - primary_image
+      - slug
+      - total_stock
+    ProductWrite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 220
+        slug:
+          type: string
+          pattern: ^[-\w]+$
+          maxLength: 240
+        short_description:
+          type: string
+          maxLength: 320
+        description:
+          type: string
+        specifications: {}
+        base_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        compare_at_price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        sku:
+          type: string
+          maxLength: 80
+        is_active:
+          type: boolean
+        is_featured:
+          type: boolean
+        is_new:
+          type: boolean
+        view_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        sold_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        seo_title:
+          type: string
+          maxLength: 70
+        seo_description:
+          type: string
+          maxLength: 170
+        category:
+          type: integer
+        brand:
+          type: integer
+      required:
+      - base_price
+      - brand
+      - category
+      - created_at
+      - description
+      - id
+      - name
+      - sku
+      - slug
+      - updated_at
+    Register:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          title: نام
+          maxLength: 150
+        last_name:
+          type: string
+          title: نام خانوادگی
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 15
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        confirm_password:
+          type: string
+          writeOnly: true
+      required:
+      - confirm_password
+      - email
+      - id
+      - password
+      - phone
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        user_name:
+          type: string
+          readOnly: true
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        title:
+          type: string
+          maxLength: 160
+        comment:
+          type: string
+        is_approved:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - comment
+      - created_at
+      - id
+      - is_approved
+      - product
+      - rating
+      - title
+      - user_name
+    ShippingMethod:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 250
+        price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        estimated_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    StatusA4bEnum:
+      enum:
+      - pending
+      - paid
+      - failed
+      - refunded
+      type: string
+      description: |-
+        * `pending` - pending
+        * `paid` - paid
+        * `failed` - failed
+        * `refunded` - refunded
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          title: نام
+          maxLength: 150
+        last_name:
+          type: string
+          title: نام خانوادگی
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 15
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        is_staff:
+          type: boolean
+          readOnly: true
+          title: وضعیت کارمندی
+          description: نشان می‌دهد که آیا این کاربر می‌تواند وارد این وبگاه مدیریت
+            شود یا خیر.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+          title: تاریخ پیوستن
+      required:
+      - date_joined
+      - email
+      - id
+      - is_staff
+      - phone
+    Variant:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sku:
+          type: string
+          maxLength: 80
+        price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        effective_price:
+          type: integer
+          readOnly: true
+        stock:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        low_stock_threshold:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttributeValue'
+          readOnly: true
+      required:
+      - attributes
+      - effective_price
+      - id
+      - sku
+    WishlistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        product_detail:
+          allOf:
+          - $ref: '#/components/schemas/ProductList'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - product
+      - product_detail
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,1 @@
+"use client";export default function ErrorPage({reset}:{reset:()=>void}){return <main className="errorPage"><span>!</span><h1>مشکلی پیش آمد</h1><p>اتصال را بررسی کنید و دوباره تلاش کنید.</p><button className="button primary" onClick={reset}>تلاش دوباره</button></main>}
