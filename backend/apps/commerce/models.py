@@ -90,3 +90,13 @@ class Notification(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications")
     kind = models.CharField(max_length=40); title = models.CharField(max_length=150); message = models.TextField()
     is_read = models.BooleanField(default=False)
+
+class SalesForecast(TimeStampedModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sales_forecasts")
+    content = models.TextField()
+    input_snapshot = models.JSONField(default=dict)
+    model_name = models.CharField(max_length=80, default="gpt-4.1-mini")
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["user", "created_at"])]

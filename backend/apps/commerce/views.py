@@ -1,3 +1,8 @@
+import json
+import os
+from urllib import error as urllib_error
+from urllib import request as urllib_request
+
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncDay
 from django.utils import timezone
@@ -9,7 +14,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from apps.catalog.models import Product, ProductVariant
 from apps.users.models import User
-from .models import Cart, CartItem, Coupon, Notification, Order, Payment, ShippingMethod, Wishlist, WishlistItem
+from .models import Cart, CartItem, Coupon, Notification, Order, Payment, SalesForecast, ShippingMethod, Wishlist, WishlistItem
 from .serializers import AdminUserSerializer, CartItemSerializer, CartSerializer, CheckoutSerializer, CouponSerializer, InventorySerializer, NotificationSerializer, OrderSerializer, PaymentSerializer, ShippingMethodSerializer, WishlistItemSerializer
 from .services import MockPaymentGateway, cancel_order
 
@@ -103,6 +108,102 @@ def admin_stats(request):
     recent_orders = Order.objects.select_related("user").order_by("-created_at")[:6]
     top_products = Product.objects.order_by("-sold_count")[:5]
     return Response({"revenue": paid.aggregate(total=Sum("final_amount"))["total"] or 0, "revenue_today": paid.filter(created_at__date=timezone.localdate()).aggregate(total=Sum("final_amount"))["total"] or 0, "orders": Order.objects.count(), "pending_orders": Order.objects.filter(status__in=["pending", "paid", "processing"]).count(), "users": User.objects.count(), "products": Product.objects.count(), "low_stock": ProductVariant.objects.filter(stock__gt=0, stock__lte=5).count(), "out_of_stock": ProductVariant.objects.filter(stock=0).count(), "chart": list(chart), "recent_orders": [{"order_number": order.order_number, "customer": order.user.get_full_name() or order.user.email, "amount": order.final_amount, "status": order.status} for order in recent_orders], "top_products": [{"id": product.id, "name": product.name, "sold_count": product.sold_count} for product in top_products]})
+
+def _forecast_payload():
+    since = timezone.now() - timezone.timedelta(days=30)
+    paid = Order.objects.filter(payment_status="paid", created_at__gte=since)
+    daily = paid.annotate(day=TruncDay("created_at")).values("day").annotate(
+        revenue=Sum("final_amount"), orders=Count("id")
+    ).order_by("day")
+    return {
+        "period_days": 30,
+        "revenue": paid.aggregate(total=Sum("final_amount"))["total"] or 0,
+        "orders": paid.count(),
+        "daily_sales": [
+            {"day": item["day"].date().isoformat(), "revenue": item["revenue"], "orders": item["orders"]}
+            for item in daily
+        ],
+        "top_products": list(Product.objects.order_by("-sold_count").values("name", "sold_count")[:8]),
+        "low_stock_variants": ProductVariant.objects.filter(stock__lte=5).count(),
+    }
+
+def _openai_forecast(snapshot):
+    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("کلید OpenAI در تنظیمات سرور ثبت نشده است.")
+    model = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+    prompt = (
+        "شما تحلیلگر ارشد فروشگاه آنلاین لوازم جانبی دیجیتال هستید. بر اساس داده‌های JSON زیر، "
+        "یک پیش‌بینی کاربردی و محتاطانه به فارسی ارائه کنید. شامل: جمع‌بندی روند ۳۰ روز، پیش‌بینی ۷ و ۳۰ روز آینده "
+        "با بازه تقریبی، سه عامل ریسک، و چهار اقدام اولویت‌دار برای مدیر. اگر داده کم است صریح بگویید و عددسازی نکنید. "
+        "مبالغ تومان هستند. پاسخ حداکثر ۴۵۰ کلمه و با تیترهای کوتاه باشد.\n\n"
+        f"داده‌ها: {json.dumps(snapshot, ensure_ascii=False)}"
+    )
+    body = json.dumps({
+        "model": model,
+        "input": prompt,
+        "max_output_tokens": 700,
+        "store": False,
+    }).encode("utf-8")
+    req = urllib_request.Request(
+        "https://api.openai.com/v1/responses",
+        data=body,
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib_request.urlopen(req, timeout=45) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except urllib_error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore")[:500]
+        raise RuntimeError(f"سرویس هوش مصنوعی پاسخ نامعتبر داد ({exc.code}): {detail}") from exc
+    except urllib_error.URLError as exc:
+        raise RuntimeError("ارتباط با سرویس هوش مصنوعی برقرار نشد.") from exc
+    text = data.get("output_text", "").strip()
+    if not text:
+        text = "\n".join(
+            part.get("text", "")
+            for output in data.get("output", [])
+            for part in output.get("content", [])
+            if part.get("type") == "output_text"
+        ).strip()
+    if not text:
+        raise RuntimeError("سرویس هوش مصنوعی پاسخ متنی برنگرداند.")
+    return text, model
+
+@extend_schema(request=None, responses=OpenApiTypes.OBJECT)
+@api_view(["GET", "POST"])
+@permission_classes([permissions.IsAdminUser])
+def admin_sales_forecast(request):
+    today = timezone.localdate()
+    used_today = SalesForecast.objects.filter(user=request.user, created_at__date=today).count()
+    latest = SalesForecast.objects.filter(user=request.user).first()
+    base = {
+        "used_today": used_today,
+        "remaining_today": max(0, 2 - used_today),
+        "latest": None if not latest else {
+            "content": latest.content,
+            "model": latest.model_name,
+            "created_at": latest.created_at,
+        },
+    }
+    if request.method == "GET":
+        return Response(base)
+    if used_today >= 2:
+        return Response({**base, "detail": "سهمیه دو پیش‌بینی امروز استفاده شده است."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+    snapshot = _forecast_payload()
+    try:
+        content, model = _openai_forecast(snapshot)
+    except RuntimeError as exc:
+        return Response({**base, "detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    forecast = SalesForecast.objects.create(
+        user=request.user, content=content, input_snapshot=snapshot, model_name=model
+    )
+    return Response({
+        "used_today": used_today + 1,
+        "remaining_today": max(0, 1 - used_today),
+        "latest": {"content": forecast.content, "model": forecast.model_name, "created_at": forecast.created_at},
+    }, status=status.HTTP_201_CREATED)
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = NotificationSerializer; permission_classes = [permissions.IsAuthenticated]
