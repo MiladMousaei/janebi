@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import SearchBox from "./SearchBox";
 import { API_URL } from "../lib/api";
+import NotificationCenter from "./NotificationCenter";
 
 export default function SiteHeader() {
   const [cartCount, setCartCount] = useState(0);
@@ -24,6 +25,7 @@ export default function SiteHeader() {
       <Link className="brand" href="/"><span className="brandMark">ج</span><span><b>جانِبی</b><small>فروشگاه گجت</small></span></Link>
       <SearchBox />
       <nav className="actions" aria-label="دسترسی سریع">
+        <NotificationCenter />
         <a href="/account/wishlist" aria-label="علاقه‌مندی‌ها"><Heart aria-hidden="true" /><small>علاقه‌مندی</small></a>
         <a href="/account" aria-label="حساب من"><CircleUserRound aria-hidden="true" /><small>حساب من</small></a>
         <a className="cartAction" href="/cart" aria-label={`سبد خرید، ${cartCount} کالا`}><ShoppingBag aria-hidden="true" /><small>سبد خرید</small>{cartCount > 0 && <b>{cartCount}</b>}</a>

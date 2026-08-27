@@ -86,10 +86,10 @@ export default function AdminClient({ view = "dashboard" }: { view?: string }) {
     {loading || !stats ? <div className="adminSkeleton" /> : <>
       <section className="adminWelcome"><div><span>سلام، وقت بخیر</span><h2>فروشگاه امروز چه خبر؟</h2><p>آمار لحظه‌ای فروش، سفارش‌ها و موجودی را از همین‌جا کنترل کنید.</p></div><div><small>فروش امروز</small><b>{formatPrice(stats.revenue_today)}</b></div></section>
       <div className="adminStats">
-        <article><i><TrendingUp /></i><span>فروش کل</span><b>{formatPrice(stats.revenue)}</b><small>پرداخت‌های موفق</small></article>
-        <article><i><ShoppingBag /></i><span>کل سفارش‌ها</span><b>{stats.orders.toLocaleString("fa-IR")}</b><small>{stats.pending_orders.toLocaleString("fa-IR")} سفارش در جریان</small></article>
-        <article><i><Users /></i><span>مشتریان</span><b>{stats.users.toLocaleString("fa-IR")}</b><small>کاربر ثبت‌شده</small></article>
-        <article><i><Package /></i><span>محصولات</span><b>{stats.products.toLocaleString("fa-IR")}</b><small>{stats.out_of_stock.toLocaleString("fa-IR")} کالای ناموجود</small></article>
+        <Link aria-label="مشاهده تراکنش‌های فروش" className="adminStatLink" href="/admin/orders"><article><i><TrendingUp /></i><span>فروش کل</span><b>{formatPrice(stats.revenue)}</b><small>مشاهده تراکنش‌ها ←</small></article></Link>
+        <Link aria-label="مشاهده سفارش‌ها" className="adminStatLink" href="/admin/orders"><article><i><ShoppingBag /></i><span>کل سفارش‌ها</span><b>{stats.orders.toLocaleString("fa-IR")}</b><small>{stats.pending_orders.toLocaleString("fa-IR")} سفارش در جریان ←</small></article></Link>
+        <Link aria-label="مدیریت کاربران" className="adminStatLink" href="/admin/users"><article><i><Users /></i><span>مشتریان</span><b>{stats.users.toLocaleString("fa-IR")}</b><small>مدیریت کاربران ←</small></article></Link>
+        <Link aria-label="مدیریت محصولات" className="adminStatLink" href="/admin/products"><article><i><Package /></i><span>محصولات</span><b>{stats.products.toLocaleString("fa-IR")}</b><small>{stats.out_of_stock.toLocaleString("fa-IR")} کالای ناموجود ←</small></article></Link>
       </div>
       <SalesForecastCard />
       <div className="adminDashboardGrid">
