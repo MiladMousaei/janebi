@@ -1,4 +1,7 @@
+import os
+from io import BytesIO
 from unittest.mock import patch
+from urllib import error as urllib_error
 
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -38,3 +41,21 @@ class AdminSalesForecastTests(TestCase):
         )
         self.client.force_authenticate(customer)
         self.assertEqual(self.client.get(self.url).status_code, 403)
+
+    @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"})
+    @patch("apps.commerce.views.urllib_request.urlopen")
+    def test_credit_error_is_sanitized_and_actionable(self, mocked_urlopen):
+        mocked_urlopen.side_effect = urllib_error.HTTPError(
+            url="https://api.openai.com/v1/responses",
+            code=429,
+            msg="Too Many Requests",
+            hdrs={},
+            fp=BytesIO(b'{"error":{"message":"You have no credits remaining.","code":"credit_balance_exhausted"}}'),
+        )
+
+        response = self.client.post(self.url)
+
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.data["code"], "openai_quota_exhausted")
+        self.assertNotIn("You have no credits", response.data["detail"])
+        self.assertEqual(SalesForecast.objects.filter(user=self.admin).count(), 0)

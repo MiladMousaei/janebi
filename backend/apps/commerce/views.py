@@ -18,6 +18,11 @@ from .models import Cart, CartItem, Coupon, Notification, Order, Payment, SalesF
 from .serializers import AdminUserSerializer, CartItemSerializer, CartSerializer, CheckoutSerializer, CouponSerializer, InventorySerializer, NotificationSerializer, OrderSerializer, PaymentSerializer, ShippingMethodSerializer, WishlistItemSerializer
 from .services import MockPaymentGateway, cancel_order
 
+class ForecastServiceError(RuntimeError):
+    def __init__(self, message, code="openai_unavailable"):
+        super().__init__(message)
+        self.code = code
+
 class CartViewSet(viewsets.ViewSet):
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -130,7 +135,7 @@ def _forecast_payload():
 def _openai_forecast(snapshot):
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     if not api_key:
-        raise RuntimeError("کلید OpenAI در تنظیمات سرور ثبت نشده است.")
+        raise ForecastServiceError("کلید OpenAI در تنظیمات سرور ثبت نشده است.", "openai_key_missing")
     model = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
     prompt = (
         "شما تحلیلگر ارشد فروشگاه آنلاین لوازم جانبی دیجیتال هستید. بر اساس داده‌های JSON زیر، "
@@ -155,10 +160,29 @@ def _openai_forecast(snapshot):
         with urllib_request.urlopen(req, timeout=45) as response:
             data = json.loads(response.read().decode("utf-8"))
     except urllib_error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="ignore")[:500]
-        raise RuntimeError(f"سرویس هوش مصنوعی پاسخ نامعتبر داد ({exc.code}): {detail}") from exc
+        raw_detail = exc.read().decode("utf-8", errors="ignore")[:2000]
+        try:
+            provider_code = json.loads(raw_detail).get("error", {}).get("code", "")
+        except (json.JSONDecodeError, AttributeError):
+            provider_code = ""
+        if exc.code == 429 and provider_code in {"insufficient_quota", "credit_balance_exhausted"}:
+            raise ForecastServiceError(
+                "اعتبار API حساب OpenAI تمام شده است. از بخش Billing اعتبار حساب را افزایش دهید و دوباره تلاش کنید.",
+                "openai_quota_exhausted",
+            ) from exc
+        if exc.code == 429:
+            raise ForecastServiceError(
+                "سرویس OpenAI موقتاً با محدودیت درخواست روبه‌رو است. چند دقیقه دیگر دوباره تلاش کنید.",
+                "openai_rate_limited",
+            ) from exc
+        if exc.code in {401, 403}:
+            raise ForecastServiceError(
+                "کلید OpenAI معتبر نیست یا دسترسی لازم را ندارد. تنظیمات API را بررسی کنید.",
+                "openai_auth_failed",
+            ) from exc
+        raise ForecastServiceError("سرویس OpenAI موقتاً پاسخ نداد. کمی بعد دوباره تلاش کنید.") from exc
     except urllib_error.URLError as exc:
-        raise RuntimeError("ارتباط با سرویس هوش مصنوعی برقرار نشد.") from exc
+        raise ForecastServiceError("ارتباط با سرویس هوش مصنوعی برقرار نشد.", "openai_unreachable") from exc
     text = data.get("output_text", "").strip()
     if not text:
         text = "\n".join(
@@ -168,7 +192,7 @@ def _openai_forecast(snapshot):
             if part.get("type") == "output_text"
         ).strip()
     if not text:
-        raise RuntimeError("سرویس هوش مصنوعی پاسخ متنی برنگرداند.")
+        raise ForecastServiceError("سرویس هوش مصنوعی پاسخ متنی برنگرداند.", "openai_empty_response")
     return text, model
 
 @extend_schema(request=None, responses=OpenApiTypes.OBJECT)
@@ -194,8 +218,8 @@ def admin_sales_forecast(request):
     snapshot = _forecast_payload()
     try:
         content, model = _openai_forecast(snapshot)
-    except RuntimeError as exc:
-        return Response({**base, "detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    except ForecastServiceError as exc:
+        return Response({**base, "detail": str(exc), "code": exc.code}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     forecast = SalesForecast.objects.create(
         user=request.user, content=content, input_snapshot=snapshot, model_name=model
     )

@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, BadgeCheck, PackageCheck, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { ArrowLeft, PackageCheck, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import type { Product } from "../lib/types";
-import { formatPrice } from "../lib/api";
 
 export default function HeroSlider({ products }: { products: Product[] }) {
   const featured = products[0];
@@ -24,11 +23,5 @@ export default function HeroSlider({ products }: { products: Product[] }) {
         <span><PackageCheck size={19} /><b>۷ روز بازگشت</b></span>
       </div>
     </div>
-    {featured && <Link className="heroFeatured" href={`/product/${featured.slug}`}>
-      <span><BadgeCheck size={16} /> پیشنهاد ویژه</span>
-      <b>{featured.name}</b>
-      <strong>{formatPrice(featured.base_price)}</strong>
-      <ArrowLeft className="heroFeaturedArrow" size={19} />
-    </Link>}
   </section>;
 }
