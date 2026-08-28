@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleUserRound, Headphones, Heart, Menu, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
+import { CircleUserRound, Heart, Menu, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import SearchBox from "./SearchBox";
@@ -15,11 +15,6 @@ export default function SiteHeader() {
     return () => window.removeEventListener("janebi:cart-updated", loadCart);
   }, []);
   return <>
-    <div className="announcement"><div className="shell">
-      <span><Truck size={15} /> ارسال سریع به سراسر ایران</span>
-      <span><ShieldCheck size={15} /> ضمانت اصالت کالا</span>
-      <span><Headphones size={15} /> پشتیبانی واقعی</span>
-    </div></div>
     <header className="header shell">
       <Link className="brand" href="/"><span className="brandMark">ج</span><span><b>جانِبی</b><small>فروشگاه گجت</small></span></Link>
       <SearchBox />

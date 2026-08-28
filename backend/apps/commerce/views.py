@@ -14,9 +14,17 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from apps.catalog.models import Product, ProductVariant
 from apps.users.models import User
-from .models import Cart, CartItem, Coupon, Notification, Order, Payment, SalesForecast, ShippingMethod, Wishlist, WishlistItem
-from .serializers import AdminUserSerializer, CartItemSerializer, CartSerializer, CheckoutSerializer, CouponSerializer, InventorySerializer, NotificationSerializer, OrderSerializer, PaymentSerializer, ShippingMethodSerializer, WishlistItemSerializer
-from .services import MockPaymentGateway, cancel_order
+from .models import (
+    Cart, CartItem, Coupon, Notification, Order, Payment, SalesForecast, ShippingMethod,
+    SMSMessage, StoreConfiguration, Ticket, TicketMessage, Wishlist, WishlistItem,
+)
+from .serializers import (
+    AdminUserSerializer, CartItemSerializer, CartSerializer, CheckoutSerializer,
+    CouponSerializer, InventorySerializer, NotificationSerializer, OrderSerializer,
+    PaymentSerializer, ShippingMethodSerializer, SMSMessageSerializer,
+    StoreConfigurationSerializer, TicketSerializer, WishlistItemSerializer,
+)
+from .services import MockPaymentGateway, cancel_order, deliver_sms
 
 class ForecastServiceError(RuntimeError):
     def __init__(self, message, code="openai_unavailable"):
@@ -234,6 +242,98 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False): return Notification.objects.none()
         return Notification.objects.filter(user=self.request.user)
+
+    @action(detail=False, methods=["post"])
+    def mark_all_read(self, request):
+        updated = self.get_queryset().filter(is_read=False).update(is_read=True)
+        return Response({"updated": updated})
+
+
+class TicketViewSet(viewsets.ModelViewSet):
+    serializer_class = TicketSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ["get", "post", "patch", "head", "options"]
+
+    def get_queryset(self):
+        queryset = Ticket.objects.select_related("user").prefetch_related("messages", "messages__sender")
+        if getattr(self, "swagger_fake_view", False):
+            return queryset.none()
+        return queryset if self.request.user.is_staff else queryset.filter(user=self.request.user)
+
+    def partial_update(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return Response({"detail": "فقط مدیر می‌تواند وضعیت تیکت را تغییر دهد."}, status=status.HTTP_403_FORBIDDEN)
+        return super().partial_update(request, *args, **kwargs)
+
+    @action(detail=True, methods=["post"])
+    def reply(self, request, pk=None):
+        ticket = self.get_object()
+        body = str(request.data.get("message", "")).strip()
+        if not body:
+            return Response({"message": ["متن پاسخ الزامی است."]}, status=status.HTTP_400_BAD_REQUEST)
+        TicketMessage.objects.create(ticket=ticket, sender=request.user, body=body, is_admin_reply=request.user.is_staff)
+        ticket.status = "answered" if request.user.is_staff else "pending"
+        ticket.last_message_at = timezone.now()
+        ticket.save(update_fields=["status", "last_message_at", "updated_at"])
+        if request.user.is_staff:
+            Notification.objects.create(user=ticket.user, kind="ticket_reply", title="پاسخ جدید پشتیبانی", message=f"به تیکت «{ticket.subject}» پاسخ داده شد.")
+        else:
+            Notification.objects.bulk_create([
+                Notification(
+                    user=admin,
+                    kind="ticket_reply",
+                    title="پاسخ جدید مشتری",
+                    message=f"در تیکت «{ticket.subject}» پیام جدیدی ثبت شد.",
+                )
+                for admin in User.objects.filter(is_staff=True, is_active=True).exclude(pk=request.user.pk)
+            ])
+        ticket._prefetched_objects_cache = {}
+        return Response(TicketSerializer(ticket, context={"request": request}).data)
+
+
+@extend_schema(request=StoreConfigurationSerializer, responses=StoreConfigurationSerializer)
+@api_view(["GET", "PATCH"])
+@permission_classes([permissions.AllowAny])
+def store_configuration(request):
+    configuration = StoreConfiguration.load()
+    if request.method == "GET":
+        return Response(StoreConfigurationSerializer(configuration).data)
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return Response({"detail": "دسترسی مدیر لازم است."}, status=status.HTTP_403_FORBIDDEN)
+    serializer = StoreConfigurationSerializer(configuration, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
+
+@extend_schema(request=OpenApiTypes.OBJECT, responses=SMSMessageSerializer(many=True))
+@api_view(["GET", "POST"])
+@permission_classes([permissions.IsAdminUser])
+def admin_sms(request):
+    if request.method == "GET":
+        messages = SMSMessage.objects.select_related("recipient")[:100]
+        return Response(SMSMessageSerializer(messages, many=True).data)
+
+    text = str(request.data.get("message", "")).strip()
+    audience = request.data.get("audience", "selected")
+    user_ids = request.data.get("user_ids") or []
+    if not text:
+        return Response({"message": ["متن پیامک الزامی است."]}, status=status.HTTP_400_BAD_REQUEST)
+    if len(text) > 500:
+        return Response({"message": ["متن پیامک حداکثر ۵۰۰ کاراکتر است."]}, status=status.HTTP_400_BAD_REQUEST)
+    users = User.objects.filter(is_active=True).exclude(phone="")
+    if audience != "all":
+        users = users.filter(id__in=user_ids)
+    users = list(users[:500])
+    if not users:
+        return Response({"user_ids": ["حداقل یک کاربر دارای شماره موبایل انتخاب کنید."]}, status=status.HTTP_400_BAD_REQUEST)
+
+    records = []
+    for user in users:
+        sms = SMSMessage.objects.create(recipient=user, phone=user.phone, message=text, sent_by=request.user)
+        records.append(deliver_sms(sms))
+        Notification.objects.create(user=user, kind="admin_message", title="پیام فروشگاه جانِبی", message=text)
+    return Response(SMSMessageSerializer(records, many=True).data, status=status.HTTP_201_CREATED)
 
 class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AdminUserSerializer; permission_classes = [permissions.IsAdminUser]

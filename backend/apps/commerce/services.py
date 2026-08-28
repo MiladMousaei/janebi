@@ -1,11 +1,15 @@
 from dataclasses import dataclass
+import json
+import os
+from urllib import parse as urllib_parse
+from urllib import request as urllib_request
 from uuid import uuid4
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from apps.catalog.models import ProductVariant
-from .models import Cart, Coupon, CouponUsage, Notification, Order, OrderItem, Payment
+from .models import Cart, Coupon, CouponUsage, Notification, Order, OrderItem, Payment, SMSMessage
 from apps.core.services.email import send_order_created_email
 
 def unit_price(item):
@@ -80,3 +84,27 @@ class MockPaymentGateway:
             payment.status = "failed"; payment.order.payment_status = "failed"; payment.order.save(update_fields=["payment_status", "updated_at"])
         payment.save(update_fields=["status", "transaction_id", "paid_at", "updated_at"])
         return payment
+
+
+def deliver_sms(sms: SMSMessage) -> SMSMessage:
+    api_key = os.getenv("KAVENEGAR_API_KEY", "").strip()
+    if not api_key:
+        sms.status = "queued"
+        sms.error_message = "کلید سرویس پیامک تنظیم نشده؛ پیام در صف ذخیره شد."
+        sms.save(update_fields=["status", "error_message", "updated_at"])
+        return sms
+
+    query = urllib_parse.urlencode({"receptor": sms.phone, "message": sms.message})
+    endpoint = f"https://api.kavenegar.com/v1/{api_key}/sms/send.json?{query}"
+    try:
+        with urllib_request.urlopen(endpoint, timeout=12) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        entries = payload.get("entries") or []
+        sms.status = "sent"
+        sms.provider_reference = str(entries[0].get("messageid", "")) if entries else ""
+        sms.error_message = ""
+    except Exception as exc:
+        sms.status = "failed"
+        sms.error_message = str(exc)[:300]
+    sms.save(update_fields=["status", "provider_reference", "error_message", "updated_at"])
+    return sms

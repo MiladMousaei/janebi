@@ -31,6 +31,8 @@ services:
         sync: false
       - key: OPENAI_MODEL
         value: gpt-4.1-mini
+      - key: KAVENEGAR_API_KEY
+        sync: false
 
   - type: web
     name: janebi-store

@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, LayoutDashboard, LogOut, MapPinned, PackageSearch, Store, UserRound } from "lucide-react";
+import { Headphones, Heart, LayoutDashboard, LogOut, MapPinned, PackageSearch, Store, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
@@ -12,6 +12,7 @@ const links = [
   { href: "/account/orders", label: "سفارش‌ها", icon: PackageSearch },
   { href: "/account/addresses", label: "آدرس‌ها", icon: MapPinned },
   { href: "/account/wishlist", label: "علاقه‌مندی‌ها", icon: Heart },
+  { href: "/account/tickets", label: "پشتیبانی", icon: Headphones },
 ];
 
 export default function AccountShell({ children }: { children: ReactNode }) {

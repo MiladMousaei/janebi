@@ -2,6 +2,7 @@ import uuid
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils import timezone
 from apps.catalog.models import Product, ProductVariant
 from apps.core.models import TimeStampedModel
 
@@ -100,3 +101,77 @@ class SalesForecast(TimeStampedModel):
     class Meta:
         ordering = ["-created_at"]
         indexes = [models.Index(fields=["user", "created_at"])]
+
+
+class StoreConfiguration(TimeStampedModel):
+    flash_sale_title = models.CharField(max_length=120, default="پیشنهاد شگفت‌انگیز")
+    flash_sale_ends_at = models.DateTimeField(null=True, blank=True)
+    flash_sale_enabled = models.BooleanField(default=True)
+    shop_banner_title = models.CharField(max_length=160, default="همه‌چیز برای یک انتخاب هوشمندانه")
+    shop_banner_subtitle = models.CharField(
+        max_length=280,
+        default="جدیدترین گجت‌ها و لوازم جانبی اصل را با ارسال سریع و ضمانت واقعی پیدا کنید.",
+    )
+
+    class Meta:
+        verbose_name = "تنظیمات فروشگاه"
+        verbose_name_plural = "تنظیمات فروشگاه"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        configuration, created = cls.objects.get_or_create(pk=1)
+        if created and not configuration.flash_sale_ends_at:
+            configuration.flash_sale_ends_at = timezone.now() + timezone.timedelta(days=3)
+            configuration.save(update_fields=["flash_sale_ends_at", "updated_at"])
+        return configuration
+
+
+class Ticket(TimeStampedModel):
+    STATUSES = [
+        ("open", "باز"),
+        ("pending", "در انتظار پاسخ"),
+        ("answered", "پاسخ داده‌شده"),
+        ("closed", "بسته"),
+    ]
+    CATEGORIES = [
+        ("general", "عمومی"),
+        ("order", "سفارش"),
+        ("payment", "پرداخت"),
+        ("product", "محصول"),
+    ]
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tickets")
+    subject = models.CharField(max_length=180)
+    category = models.CharField(max_length=20, choices=CATEGORIES, default="general")
+    status = models.CharField(max_length=20, choices=STATUSES, default="open", db_index=True)
+    last_message_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ["-last_message_at"]
+
+
+class TicketMessage(TimeStampedModel):
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name="messages")
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ticket_messages")
+    body = models.TextField()
+    is_admin_reply = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["created_at"]
+
+
+class SMSMessage(TimeStampedModel):
+    STATUSES = [("queued", "در صف"), ("sent", "ارسال‌شده"), ("failed", "ناموفق")]
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="sms_messages")
+    phone = models.CharField(max_length=15, db_index=True)
+    message = models.CharField(max_length=500)
+    status = models.CharField(max_length=12, choices=STATUSES, default="queued", db_index=True)
+    provider_reference = models.CharField(max_length=120, blank=True)
+    error_message = models.CharField(max_length=300, blank=True)
+    sent_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="sent_sms_messages")
+
+    class Meta:
+        ordering = ["-created_at"]

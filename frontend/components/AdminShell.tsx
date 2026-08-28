@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Boxes, ChevronLeft, CircleUserRound, FolderTree, Gem, LayoutDashboard,
-  LogOut, Menu, Package, Percent, Settings, ShoppingBag, Star, Store,
+  Boxes, ChevronLeft, CircleUserRound, FolderTree, Gem, Headphones, LayoutDashboard,
+  LogOut, Menu, MessageSquareText, Package, Percent, Settings, ShoppingBag, Star, Store,
   Users, X, type LucideIcon,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -26,6 +26,9 @@ const groups: { label: string; links: NavLink[] }[] = [
   ]},
   { label: "مدیریت", links: [
     { href: "/admin/users", label: "مشتریان", icon: Users },
+    { href: "/admin/tickets", label: "تیکت‌ها", icon: Headphones },
+    { href: "/admin/sms", label: "ارسال پیامک", icon: MessageSquareText },
+    { href: "/admin/store-settings", label: "مدیریت فروشگاه", icon: Store },
     { href: "/admin/settings", label: "اطلاعات مدیر", icon: Settings },
   ]},
 ];

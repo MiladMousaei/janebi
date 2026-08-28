@@ -21,7 +21,7 @@ export default function ScrollExperience() {
     };
     const scan = () => {
       if (!revealObserver) return;
-      const selector = ".section, .flashSale, .serviceStrip, .newsletter, .catalogTitle, .catalogWorkspace, .step, .adminWelcome, .adminStats > a, .adminDashboardGrid > section, .aiForecastPanel, .adminSettingsCard";
+      const selector = ".section, .flashSale, .serviceStrip, .newsletter, .catalogTitle, .shopBanner, .catalogWorkspace, .step, .adminWelcome, .adminStats > a, .adminDashboardGrid > section, .aiForecastPanel, .adminSettingsCard, .storeSettingsCard, .ticketConversation, .smsComposer, .smsHistory";
       document.querySelectorAll<HTMLElement>(selector).forEach((element, index) => {
         if (element.dataset.magicReveal) return;
         element.dataset.magicReveal = String(index % 4);

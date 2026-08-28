@@ -83,18 +83,20 @@ export default function CheckoutClient() {
       const response = await fetch(`${API_URL}/orders/checkout/`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
       const body = await response.json();
       if (!response.ok) throw new Error(errorText(body, "ثبت سفارش ممکن نشد؛ موجودی و اطلاعات را بررسی کنید."));
-      setOrder(body); setNotice(null);
+      setOrder(body); setNotice({ kind: "info", text: "سفارش ثبت شد؛ در حال انتقال امن به صفحه پرداخت…" });
+      await openPayment(body);
     } catch (error) { setNotice({ kind: "error", text: error instanceof Error ? error.message : "ثبت سفارش انجام نشد." }); }
     finally { setSubmitting(false); }
   }
 
-  async function pay() {
-    if (!order) return;
-    const response = await fetch(`${API_URL}/payments/create_payment/`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ order_id: order.id }) });
+  async function openPayment(targetOrder: Order) {
+    const response = await fetch(`${API_URL}/payments/create_payment/`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ order_id: targetOrder.id }) });
     const payment = await response.json();
     if (response.ok) location.href = `/payment/mock?authority=${payment.authority}&amount=${payment.amount}`;
     else setNotice({ kind: "error", text: errorText(payment, "ایجاد درگاه پرداخت انجام نشد.") });
   }
+
+  async function pay() { if (order) await openPayment(order); }
 
   if (loading) return <div className="checkoutLoading"><LoaderCircle className="spin" /><b>در حال آماده‌سازی تسویه حساب…</b></div>;
   if (order) return <div className="successCard"><span><Check /></span><h2>سفارش با موفقیت ثبت شد</h2><p>شماره سفارش: {order.order_number}</p><b>{formatPrice(order.final_amount)}</b>{notice && <Notice kind={notice.kind}>{notice.text}</Notice>}<button className="button primary" onClick={pay}>پرداخت آزمایشی</button></div>;
@@ -113,7 +115,7 @@ export default function CheckoutClient() {
       <form className="checkoutFinalize" onSubmit={submit}>
         <section className="step checkoutStep"><span><TicketPercent /></span><div><header><div><small>مرحله سوم</small><h2>کد تخفیف</h2></div></header><input className="couponInput" name="coupon_code" placeholder="مثلاً WELCOME10" /></div></section>
         {notice && <Notice kind={notice.kind} title={notice.kind === "error" ? "ثبت سفارش نیاز به توجه دارد" : undefined}>{notice.text}</Notice>}
-        <button className="button primary checkoutSubmit" disabled={submitting || !shipping.length}>{submitting ? <><LoaderCircle className="spin" /> در حال ثبت سفارش…</> : "ثبت نهایی سفارش"}</button>
+        <button className="button primary checkoutSubmit" disabled={submitting || !shipping.length}>{submitting ? <><LoaderCircle className="spin" /> در حال ثبت سفارش…</> : "ثبت سفارش و رفتن به پرداخت"}</button>
       </form>
     </div>
     <aside className="checkoutAside">

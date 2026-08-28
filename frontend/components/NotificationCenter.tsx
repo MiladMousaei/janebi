@@ -23,8 +23,25 @@ export default function NotificationCenter() {
     return () => document.removeEventListener("mousedown", close);
   }, []);
   const unread = items.filter(item => !item.is_read).length;
+  async function togglePanel() {
+    const nextOpen = !open;
+    setOpen(nextOpen);
+    if (!nextOpen || unread === 0) return;
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    setItems(previous => previous.map(item => ({ ...item, is_read: true })));
+    try {
+      const response = await fetch(`${API_URL}/notifications/mark_all_read/`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error();
+    } catch {
+      setItems(previous => previous.map(item => ({ ...item, is_read: false })));
+    }
+  }
   return <div className="notificationCenter" ref={root}>
-    <button className="notificationTrigger" onClick={() => setOpen(value => !value)} aria-label="اعلان‌ها" aria-expanded={open}><Bell aria-hidden="true" />{unread > 0 && <b>{unread.toLocaleString("fa-IR")}</b>}</button>
+    <button className="notificationTrigger" onClick={togglePanel} aria-label="اعلان‌ها" aria-expanded={open}><Bell aria-hidden="true" />{unread > 0 && <b>{unread.toLocaleString("fa-IR")}</b>}</button>
     {open && <div className="notificationPanel">
       <header><div><small>مرکز پیام‌ها</small><h3>اعلان‌های شما</h3></div>{unread > 0 && <span>{unread.toLocaleString("fa-IR")} جدید</span>}</header>
       <div className="notificationList">{items.length ? items.map(item => <article className={item.is_read ? "" : "unread"} key={item.id}><span>{item.kind === "payment_success" ? <CheckCircle2 /> : <PackageCheck />}</span><div><b>{item.title}</b><p>{item.message}</p><small>{new Date(item.created_at).toLocaleDateString("fa-IR")}</small></div></article>) : <div className="notificationEmpty"><Bell /><b>همه‌چیز آرام است</b><p>اعلان تازه‌ای ندارید.</p></div>}</div>

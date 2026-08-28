@@ -3,7 +3,10 @@ from apps.catalog.models import Product, ProductVariant
 from apps.catalog.serializers import ProductListSerializer, VariantSerializer
 from apps.users.models import Address
 from apps.users.serializers import UserSerializer
-from .models import Cart, CartItem, Coupon, Notification, Order, OrderItem, Payment, ShippingMethod, WishlistItem
+from .models import (
+    Cart, CartItem, Coupon, Notification, Order, OrderItem, Payment, ShippingMethod,
+    SMSMessage, StoreConfiguration, Ticket, TicketMessage, WishlistItem,
+)
 from .services import create_order, unit_price
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -57,6 +60,85 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta: model = Notification; fields = "__all__"; read_only_fields = ["user"]
+
+
+class StoreConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreConfiguration
+        fields = [
+            "flash_sale_title", "flash_sale_ends_at", "flash_sale_enabled",
+            "shop_banner_title", "shop_banner_subtitle", "updated_at",
+        ]
+        read_only_fields = ["updated_at"]
+
+
+class TicketMessageSerializer(serializers.ModelSerializer):
+    sender_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TicketMessage
+        fields = ["id", "sender", "sender_name", "body", "is_admin_reply", "created_at"]
+        read_only_fields = ["sender", "is_admin_reply"]
+
+    def get_sender_name(self, obj):
+        return obj.sender.get_full_name() or obj.sender.email
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    messages = TicketMessageSerializer(many=True, read_only=True)
+    message = serializers.CharField(write_only=True, required=False, allow_blank=False)
+    user_name = serializers.SerializerMethodField()
+    user_email = serializers.EmailField(source="user.email", read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = [
+            "id", "subject", "category", "status", "user", "user_name", "user_email",
+            "last_message_at", "created_at", "updated_at", "messages", "message",
+        ]
+        read_only_fields = ["user", "last_message_at"]
+
+    def get_user_name(self, obj):
+        return obj.user.get_full_name() or obj.user.email
+
+    def validate(self, attrs):
+        if self.instance is None and not attrs.get("message"):
+            raise serializers.ValidationError({"message": "متن پیام الزامی است."})
+        return attrs
+
+    def create(self, validated_data):
+        message = validated_data.pop("message")
+        request = self.context["request"]
+        validated_data["status"] = "open"
+        ticket = Ticket.objects.create(user=request.user, **validated_data)
+        TicketMessage.objects.create(ticket=ticket, sender=request.user, body=message, is_admin_reply=request.user.is_staff)
+        if not request.user.is_staff:
+            from apps.users.models import User
+            from .models import Notification
+            Notification.objects.bulk_create([
+                Notification(
+                    user=admin,
+                    kind="ticket_created",
+                    title="تیکت پشتیبانی جدید",
+                    message=f"{request.user.get_full_name() or request.user.email}: {ticket.subject}",
+                )
+                for admin in User.objects.filter(is_staff=True, is_active=True).exclude(pk=request.user.pk)
+            ])
+        return ticket
+
+
+class SMSMessageSerializer(serializers.ModelSerializer):
+    recipient_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SMSMessage
+        fields = ["id", "recipient", "recipient_name", "phone", "message", "status", "provider_reference", "error_message", "created_at"]
+        read_only_fields = fields
+
+    def get_recipient_name(self, obj):
+        if not obj.recipient:
+            return "—"
+        return obj.recipient.get_full_name() or obj.recipient.email
 
 class InventorySerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)

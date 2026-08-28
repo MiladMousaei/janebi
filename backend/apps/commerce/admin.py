@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Cart, CartItem, Coupon, CouponUsage, Notification, Order, OrderItem, Payment, ShippingMethod, Wishlist, WishlistItem
+from .models import (
+    Cart, CartItem, Coupon, CouponUsage, Notification, Order, OrderItem, Payment,
+    ShippingMethod, SMSMessage, StoreConfiguration, Ticket, TicketMessage,
+    Wishlist, WishlistItem,
+)
 class OrderItemInline(admin.TabularInline): model = OrderItem; extra = 0; can_delete = False
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -13,4 +17,24 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ["authority", "order", "amount", "status", "paid_at"]
     list_filter = ["status", "provider"]
     readonly_fields = ["authority", "transaction_id", "amount"]
-admin.site.register([Cart, CartItem, Wishlist, WishlistItem, ShippingMethod, Coupon, CouponUsage, Notification])
+class TicketMessageInline(admin.TabularInline):
+    model = TicketMessage
+    extra = 0
+
+
+@admin.register(Ticket)
+class TicketAdmin(admin.ModelAdmin):
+    list_display = ["subject", "user", "category", "status", "last_message_at"]
+    list_filter = ["status", "category"]
+    search_fields = ["subject", "user__email", "user__phone"]
+    inlines = [TicketMessageInline]
+
+
+@admin.register(SMSMessage)
+class SMSMessageAdmin(admin.ModelAdmin):
+    list_display = ["phone", "recipient", "status", "created_at"]
+    list_filter = ["status", "created_at"]
+    search_fields = ["phone", "recipient__email", "message"]
+
+
+admin.site.register([Cart, CartItem, Wishlist, WishlistItem, ShippingMethod, Coupon, CouponUsage, Notification, StoreConfiguration])
