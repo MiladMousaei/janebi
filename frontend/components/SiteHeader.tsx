@@ -10,10 +10,9 @@ import NotificationCenter from "./NotificationCenter";
 export default function SiteHeader() {
   const [cartCount, setCartCount] = useState(0);
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
-    fetch(`${API_URL}/cart/`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : null).then(data => data && setCartCount(data.item_count));
+    function loadCart() { const token = localStorage.getItem("access_token"); if (!token) return; fetch(`${API_URL}/cart/`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null).then(data => data && setCartCount(data.item_count)); }
+    loadCart(); window.addEventListener("janebi:cart-updated", loadCart);
+    return () => window.removeEventListener("janebi:cart-updated", loadCart);
   }, []);
   return <>
     <div className="announcement"><div className="shell">

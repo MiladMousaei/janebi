@@ -1,2 +1,7 @@
-import SiteHeader from"./SiteHeader";
-export default function SiteChrome({children}:{children:React.ReactNode}){return <><SiteHeader/>{children}<footer className="footer"><div className="shell footerGrid"><div className="footerIntro"><a className="brand" href="/"><span className="brandMark">ج</span> جانِبی</a><p>انتخاب مطمئن گجت و لوازم جانبی اصل با ارسال سریع.</p></div><div><b>خرید</b><a href="/shop">فروشگاه</a><a href="/shop?discount=true">تخفیف‌ها</a><a href="/account/orders">پیگیری سفارش</a></div><div><b>راهنما</b><a href="/faq">سوالات متداول</a><a href="/terms">قوانین</a><a href="/privacy">حریم خصوصی</a></div><div><b>ارتباط</b><span>۰۲۱-۹۱۰۰۱۲۳۴</span><span>support@janebi.ir</span></div></div></footer><nav className="mobileNav"><a href="/">⌂<span>خانه</span></a><a href="/shop">▦<span>دسته‌ها</span></a><a href="/search">⌕<span>جستجو</span></a><a href="/cart">▢<span>سبد</span></a><a href="/account">◯<span>حساب</span></a></nav></>}
+import Link from "next/link";
+import MobileNav from "./MobileNav";
+import SiteHeader from "./SiteHeader";
+
+export default function SiteChrome({ children }: { children: React.ReactNode }) {
+  return <><SiteHeader />{children}<footer className="footer"><div className="shell footerGrid"><div className="footerIntro"><Link className="brand" href="/"><span className="brandMark">ج</span> جانِبی</Link><p>انتخاب مطمئن گجت و لوازم جانبی اصل با ارسال سریع.</p></div><div><b>خرید</b><Link href="/shop">فروشگاه</Link><Link href="/shop?discount=true">تخفیف‌ها</Link><Link href="/account/orders">پیگیری سفارش</Link></div><div><b>راهنما</b><Link href="/faq">سوالات متداول</Link><Link href="/terms">قوانین</Link><Link href="/privacy">حریم خصوصی</Link></div><div><b>ارتباط</b><span>۰۲۱-۹۱۰۰۱۲۳۴</span><span>support@janebi.ir</span></div></div></footer><MobileNav /></>;
+}

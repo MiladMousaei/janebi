@@ -1,13 +1,14 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Check, ChevronDown, LoaderCircle, MapPin, Plus, TicketPercent, Truck } from "lucide-react";
+import { Check, ChevronDown, FileText, LoaderCircle, MapPin, Plus, ReceiptText, TicketPercent, Truck } from "lucide-react";
 import { API_URL, formatPrice } from "../lib/api";
 import Notice from "./Notice";
 
 type Address = { id: number; recipient_name: string; phone: string; province: string; city: string; address: string; postal_code: string; plaque: string; unit: string; is_default: boolean };
 type Shipping = { id: number; name: string; description: string; price: number; estimated_days: number };
 type Order = { id: number; order_number: string; final_amount: number };
+type Cart = { items: { id: number; quantity: number; total_price: number; product_detail: { name: string } }[]; subtotal: number; item_count: number };
 
 function errorText(body: unknown, fallback: string) {
   if (!body || typeof body !== "object") return fallback;
@@ -20,6 +21,7 @@ function errorText(body: unknown, fallback: string) {
 export default function CheckoutClient() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [shipping, setShipping] = useState<Shipping[]>([]);
+  const [cart, setCart] = useState<Cart | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<number | null>(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -35,13 +37,15 @@ export default function CheckoutClient() {
     Promise.all([
       fetch(`${API_URL}/auth/addresses/`, { headers: { Authorization: `Bearer ${token}` } }),
       fetch(`${API_URL}/shipping-methods/`),
-    ]).then(async ([addressResponse, shippingResponse]) => {
-      if (!addressResponse.ok || !shippingResponse.ok) throw new Error();
-      const [addressData, shippingData] = await Promise.all([addressResponse.json(), shippingResponse.json()]);
+      fetch(`${API_URL}/cart/`, { headers: { Authorization: `Bearer ${token}` } }),
+    ]).then(async ([addressResponse, shippingResponse, cartResponse]) => {
+      if (!addressResponse.ok || !shippingResponse.ok || !cartResponse.ok) throw new Error();
+      const [addressData, shippingData, cartData] = await Promise.all([addressResponse.json(), shippingResponse.json(), cartResponse.json()]);
       const nextAddresses: Address[] = addressData.results || addressData;
       const nextShipping: Shipping[] = shippingData.results || shippingData;
       setAddresses(nextAddresses);
       setShipping(nextShipping);
+      setCart(cartData);
       setSelectedAddress(nextAddresses.find(item => item.is_default)?.id || nextAddresses[0]?.id || null);
       setSelectedShipping(nextShipping[0]?.id || null);
       setShowAddressForm(nextAddresses.length === 0);
@@ -95,6 +99,10 @@ export default function CheckoutClient() {
   if (loading) return <div className="checkoutLoading"><LoaderCircle className="spin" /><b>در حال آماده‌سازی تسویه حساب…</b></div>;
   if (order) return <div className="successCard"><span><Check /></span><h2>سفارش با موفقیت ثبت شد</h2><p>شماره سفارش: {order.order_number}</p><b>{formatPrice(order.final_amount)}</b>{notice && <Notice kind={notice.kind}>{notice.text}</Notice>}<button className="button primary" onClick={pay}>پرداخت آزمایشی</button></div>;
 
+  const chosenShipping = shipping.find(method => method.id === selectedShipping);
+  const shippingCost = Number(chosenShipping?.price || 0);
+  const payable = Number(cart?.subtotal || 0) + shippingCost;
+
   return <div className="checkoutWorkspace">
     <div className="checkoutForm">
       <section className="step checkoutStep"><span><MapPin /></span><div><header><div><small>مرحله اول</small><h2>آدرس تحویل</h2></div>{addresses.length > 0 && <button type="button" className="textButton" onClick={() => setShowAddressForm(value => !value)}><Plus size={17} /> آدرس جدید <ChevronDown size={16} /></button>}</header>
@@ -108,6 +116,9 @@ export default function CheckoutClient() {
         <button className="button primary checkoutSubmit" disabled={submitting || !shipping.length}>{submitting ? <><LoaderCircle className="spin" /> در حال ثبت سفارش…</> : "ثبت نهایی سفارش"}</button>
       </form>
     </div>
-    <aside className="checkoutHelp"><Truck /><h3>خریدت در مسیر امن است</h3><p>موجودی و مبلغ سفارش پیش از ثبت نهایی دوباره بررسی می‌شود.</p><div><span>ارسال قابل پیگیری</span><b>ضمانت اصالت</b></div></aside>
+    <aside className="checkoutAside">
+      <section className="checkoutInvoice"><header><span><ReceiptText /></span><div><small>فاکتور شما</small><h2>خلاصه سفارش</h2></div></header><div className="invoiceItems">{cart?.items.slice(0, 4).map(item => <div key={item.id}><span>{item.product_detail.name}<small>{item.quantity.toLocaleString("fa-IR")} عدد</small></span><b>{formatPrice(item.total_price)}</b></div>)}{!cart?.items.length && <p>سبد خرید شما خالی است.</p>}</div><div className="invoiceRow"><span>جمع کالاها ({cart?.item_count.toLocaleString("fa-IR") || "۰"})</span><b>{formatPrice(cart?.subtotal || 0)}</b></div><div className="invoiceRow"><span>هزینه ارسال</span><b>{shippingCost ? formatPrice(shippingCost) : "رایگان"}</b></div><div className="invoiceTotal"><span>مبلغ قابل پرداخت</span><b>{formatPrice(payable)}</b></div><small className="invoiceHint"><FileText /> مبلغ نهایی پس از اعمال کد تخفیف به‌روزرسانی می‌شود.</small></section>
+      <section className="checkoutHelp"><Truck /><h3>خریدت در مسیر امن است</h3><p>موجودی و مبلغ سفارش پیش از ثبت نهایی دوباره بررسی می‌شود.</p><div><span>ارسال قابل پیگیری</span><b>ضمانت اصالت</b></div></section>
+    </aside>
   </div>;
 }

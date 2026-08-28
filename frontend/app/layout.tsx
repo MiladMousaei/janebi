@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@fontsource-variable/vazirmatn";
 import "./globals.css";
 import ScrollExperience from "../components/ScrollExperience";
+import GlobalToast from "../components/GlobalToast";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
@@ -23,5 +24,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="fa" dir="rtl" data-scroll-behavior="smooth"><body><ScrollExperience />{children}</body></html>;
+  return <html lang="fa" dir="rtl" data-scroll-behavior="smooth"><body><ScrollExperience /><GlobalToast />{children}</body></html>;
 }
