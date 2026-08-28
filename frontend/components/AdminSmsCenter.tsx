@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { LoaderCircle, MessageSquareText, Phone, Search, Send, Users } from "lucide-react";
 import { API_URL } from "../lib/api";
+import { authFetch } from "../lib/authFetch";
 import { notify } from "../lib/notify";
 import AdminShell from "./AdminShell";
 
@@ -20,19 +21,19 @@ export default function AdminSmsCenter() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const headers = useMemo(() => ({ "Content-Type": "application/json", Authorization: `Bearer ${token}` }), [token]);
 
   const load = useCallback(async () => {
     if (!token) { location.href = "/login?next=/admin/sms"; return; }
     const [usersResponse, historyResponse] = await Promise.all([
-      fetch(`${API_URL}/admin/users/?page_size=100`, { headers }),
-      fetch(`${API_URL}/admin/sms/`, { headers }),
+      authFetch("/admin/users/?page_size=100"),
+      authFetch("/admin/sms/"),
     ]);
+    if (usersResponse.status === 401 || historyResponse.status === 401) { location.href = "/login?next=/admin/sms"; return; }
     if (usersResponse.status === 403 || historyResponse.status === 403) { location.href = "/account"; return; }
     if (usersResponse.ok) { const data = await usersResponse.json(); setUsers((data.results || data).filter((user: User) => user.phone)); }
     if (historyResponse.ok) setHistory(await historyResponse.json());
     setLoading(false);
-  }, [headers, token]);
+  }, [token]);
   // Loading here synchronizes the client-only auth token with the admin workspace.
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void load(); }, [load]);
@@ -41,7 +42,7 @@ export default function AdminSmsCenter() {
   function toggleUser(id: number) { setSelected(previous => previous.includes(id) ? previous.filter(item => item !== id) : [...previous, id]); }
   async function submit(event: FormEvent) {
     event.preventDefault(); setSending(true);
-    const response = await fetch(`${API_URL}/admin/sms/`, { method: "POST", headers, body: JSON.stringify({ audience, user_ids: selected, message }) });
+    const response = await authFetch("/admin/sms/", { method: "POST", body: JSON.stringify({ audience, user_ids: selected, message }) });
     const body = await response.json().catch(() => ({}));
     if (response.ok) { notify(`${body.length.toLocaleString("fa-IR")} پیام در فرایند ارسال قرار گرفت.`); setMessage(""); setSelected([]); await load(); }
     else notify(Object.values(body).flat().join("، ") || "ارسال پیامک انجام نشد.", "error");

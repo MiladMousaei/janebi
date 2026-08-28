@@ -3,6 +3,7 @@
 import { CalendarClock, Image, LoaderCircle, Save, Store, TimerReset } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { API_URL } from "../lib/api";
+import { authFetch } from "../lib/authFetch";
 import type { StoreConfiguration } from "../lib/types";
 import { notify } from "../lib/notify";
 import AdminShell from "./AdminShell";
@@ -19,15 +20,17 @@ export default function StoreManagement() {
   const [config, setConfig] = useState<StoreConfiguration>(empty);
   const [loading, setLoading] = useState(true);
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const headers = useMemo(() => ({ "Content-Type": "application/json", Authorization: `Bearer ${token}` }), [token]);
   useEffect(() => {
     if (!token) { location.href = "/login?next=/admin/store-settings"; return; }
-    fetch(`${API_URL}/store-settings/`, { headers }).then(response => response.ok ? response.json() : Promise.reject()).then(setConfig).catch(() => notify("دریافت تنظیمات فروشگاه انجام نشد.", "error")).finally(() => setLoading(false));
-  }, [headers, token]);
+    authFetch("/store-settings/").then(response => {
+      if (response.status === 401) { location.href = "/login?next=/admin/store-settings"; throw new Error(); }
+      return response.ok ? response.json() : Promise.reject();
+    }).then(setConfig).catch(() => notify("دریافت تنظیمات فروشگاه انجام نشد.", "error")).finally(() => setLoading(false));
+  }, [token]);
 
   async function save(event: FormEvent) {
     event.preventDefault(); setLoading(true);
-    const response = await fetch(`${API_URL}/store-settings/`, { method: "PATCH", headers, body: JSON.stringify(config) });
+    const response = await authFetch("/store-settings/", { method: "PATCH", body: JSON.stringify(config) });
     const body = await response.json();
     if (response.ok) { setConfig(body); notify("تنظیمات فروشگاه ذخیره شد."); }
     else notify(Object.values(body).flat().join("، ") || "ذخیره تنظیمات انجام نشد.", "error");

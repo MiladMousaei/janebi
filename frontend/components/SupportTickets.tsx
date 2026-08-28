@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Headphones, LoaderCircle, MessageCircleMore, Plus, Send, TicketCheck } from "lucide-react";
 import { API_URL } from "../lib/api";
+import { authFetch } from "../lib/authFetch";
 import { notify } from "../lib/notify";
 import AccountShell from "./AccountShell";
 import AdminShell from "./AdminShell";
@@ -18,12 +19,12 @@ function TicketsWorkspace({ admin }: { admin: boolean }) {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const headers = useMemo(() => ({ "Content-Type": "application/json", Authorization: `Bearer ${token}` }), [token]);
   const selected = tickets.find(ticket => ticket.id === selectedId) || null;
 
   const load = useCallback(async () => {
     if (!token) { location.href = `/login?next=${admin ? "/admin/tickets" : "/account/tickets"}`; return; }
-    const response = await fetch(`${API_URL}/tickets/?page_size=100`, { headers });
+    const response = await authFetch("/tickets/?page_size=100");
+    if (response.status === 401) { location.href = `/login?next=${admin ? "/admin/tickets" : "/account/tickets"}`; return; }
     if (response.status === 403) { location.href = "/account"; return; }
     if (!response.ok) { notify("دریافت تیکت‌ها انجام نشد.", "error"); setLoading(false); return; }
     const body = await response.json();
@@ -31,7 +32,7 @@ function TicketsWorkspace({ admin }: { admin: boolean }) {
     setTickets(next);
     setSelectedId(previous => previous && next.some(ticket => ticket.id === previous) ? previous : next[0]?.id || null);
     setLoading(false);
-  }, [admin, headers, token]);
+  }, [admin, token]);
 
   // Loading here synchronizes the client-only auth token with the selected support workspace.
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -40,7 +41,7 @@ function TicketsWorkspace({ admin }: { admin: boolean }) {
   async function createTicket(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSending(true);
     const form = event.currentTarget;
-    const response = await fetch(`${API_URL}/tickets/`, { method: "POST", headers, body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+    const response = await authFetch("/tickets/", { method: "POST", body: JSON.stringify(Object.fromEntries(new FormData(form))) });
     if (response.ok) { form.reset(); notify("تیکت شما ثبت شد."); await load(); }
     else notify("ثبت تیکت انجام نشد؛ اطلاعات را بررسی کنید.", "error");
     setSending(false);
@@ -52,7 +53,7 @@ function TicketsWorkspace({ admin }: { admin: boolean }) {
     setSending(true);
     const form = event.currentTarget;
     const message = String(new FormData(form).get("message") || "").trim();
-    const response = await fetch(`${API_URL}/tickets/${selected.id}/reply/`, { method: "POST", headers, body: JSON.stringify({ message }) });
+    const response = await authFetch(`/tickets/${selected.id}/reply/`, { method: "POST", body: JSON.stringify({ message }) });
     if (response.ok) { form.reset(); notify("پیام ارسال شد."); await load(); }
     else notify("ارسال پیام انجام نشد.", "error");
     setSending(false);
@@ -60,7 +61,7 @@ function TicketsWorkspace({ admin }: { admin: boolean }) {
 
   async function changeStatus(status: string) {
     if (!selected || !admin) return;
-    const response = await fetch(`${API_URL}/tickets/${selected.id}/`, { method: "PATCH", headers, body: JSON.stringify({ status }) });
+    const response = await authFetch(`/tickets/${selected.id}/`, { method: "PATCH", body: JSON.stringify({ status }) });
     if (response.ok) { notify("وضعیت تیکت به‌روزرسانی شد."); await load(); }
     else notify("تغییر وضعیت انجام نشد.", "error");
   }

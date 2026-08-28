@@ -3,6 +3,7 @@
 import { Bell, CheckCircle2, PackageCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { API_URL } from "../lib/api";
+import { authFetch } from "../lib/authFetch";
 
 type Notification = { id: number; kind: string; title: string; message: string; is_read: boolean; created_at: string };
 
@@ -13,7 +14,7 @@ export default function NotificationCenter() {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
-    fetch(`${API_URL}/notifications/`, { headers: { Authorization: `Bearer ${token}` } })
+    authFetch("/notifications/")
       .then(response => response.ok ? response.json() : null)
       .then(data => data && setItems((data.results || data).slice(0, 6)));
   }, []);
@@ -31,10 +32,7 @@ export default function NotificationCenter() {
     if (!token) return;
     setItems(previous => previous.map(item => ({ ...item, is_read: true })));
     try {
-      const response = await fetch(`${API_URL}/notifications/mark_all_read/`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await authFetch("/notifications/mark_all_read/", { method: "POST" });
       if (!response.ok) throw new Error();
     } catch {
       setItems(previous => previous.map(item => ({ ...item, is_read: false })));
