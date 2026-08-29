@@ -1,5 +1,5 @@
 import pytest
-from apps.catalog.models import Review
+from apps.catalog.models import ProductVariant, Review
 from apps.users.models import User
 
 @pytest.fixture
@@ -28,3 +28,19 @@ def test_admin_can_moderate_review_and_block_user(api, admin, user, product):
     response = api.patch(f"/api/v1/admin/users/{user.id}/set_active/", {"is_active": False}, format="json")
     assert response.status_code == 200
     user.refresh_from_db(); assert not user.is_active
+
+@pytest.mark.django_db
+def test_inventory_updates_return_fresh_product_total(api, admin, product):
+    first = product.variants.first()
+    second = ProductVariant.objects.create(product=product, sku="V-2", stock=4)
+    api.force_authenticate(admin)
+
+    response = api.patch(f"/api/v1/admin/inventory/{first.id}/", {"stock": 3}, format="json")
+    assert response.status_code == 200
+    assert response.data["stock"] == 3
+    assert response.data["product_total_stock"] == 7
+
+    response = api.patch(f"/api/v1/admin/inventory/{second.id}/", {"stock": 0, "is_active": False}, format="json")
+    assert response.status_code == 200
+    assert response.data["product_total_stock"] == 3
+    assert api.get(f"/api/v1/products/{product.slug}/").data["total_stock"] == 3

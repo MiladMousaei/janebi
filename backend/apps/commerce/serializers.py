@@ -142,9 +142,11 @@ class SMSMessageSerializer(serializers.ModelSerializer):
 
 class InventorySerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)
+    product_total_stock = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
-    class Meta: model = ProductVariant; fields = ["id", "product", "product_name", "sku", "price", "stock", "low_stock_threshold", "is_active", "attributes"]
+    class Meta: model = ProductVariant; fields = ["id", "product", "product_name", "product_total_stock", "sku", "price", "stock", "low_stock_threshold", "is_active", "attributes"]
     def get_attributes(self, obj) -> list[str]: return [str(value) for value in obj.attributes.all()]
+    def get_product_total_stock(self, obj) -> int: return obj.product.total_stock
 
 class AdminUserSerializer(UserSerializer):
     order_count = serializers.IntegerField(read_only=True)
