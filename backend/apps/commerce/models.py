@@ -112,6 +112,10 @@ class StoreConfiguration(TimeStampedModel):
         max_length=280,
         default="جدیدترین گجت‌ها و لوازم جانبی اصل را با ارسال سریع و ضمانت واقعی پیدا کنید.",
     )
+    support_phone = models.CharField(max_length=30, blank=True, default="")
+    support_email = models.EmailField(blank=True, default="")
+    support_hours = models.CharField(max_length=160, default="شنبه تا پنج‌شنبه، ساعت ۹ تا ۱۸")
+    return_days = models.PositiveSmallIntegerField(default=7)
 
     class Meta:
         verbose_name = "تنظیمات فروشگاه"

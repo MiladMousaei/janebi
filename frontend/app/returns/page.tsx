@@ -1,0 +1,4 @@
+import P from "../../components/ContentPage";
+import { getStoreConfiguration } from "../../lib/api";
+export const metadata={title:"شرایط بازگشت کالا | جانِبی",description:"مهلت و شرایط درخواست بازگشت کالا در فروشگاه جانِبی."};
+export default async function Page(){const config=await getStoreConfiguration();return <P title="شرایط بازگشت کالا" kicker="خرید مطمئن"><h2>مهلت درخواست</h2><p>تا {config.return_days.toLocaleString("fa-IR")} روز پس از تحویل می‌توانید درخواست خود را از طریق تیکت ثبت کنید.</p><h2>شرایط پذیرش</h2><p>کالا باید استفاده‌نشده، بدون آسیب و همراه جعبه، برچسب‌ها و همه متعلقات باشد. اقلام بهداشتی بازشده مشمول بازگشت سلیقه‌ای نیستند.</p><h2>کالای معیوب یا مغایر</h2><p>تصاویر کالا و بسته‌بندی را در تیکت ارسال کنید. پس از بررسی، روش بازگشت و نتیجه نهایی به شما اعلام می‌شود.</p></P>}

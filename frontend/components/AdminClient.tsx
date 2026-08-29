@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { API_URL, formatPrice } from "../lib/api";
 import type { Product } from "../lib/types";
 import AdminShell from "./AdminShell";
-import SalesForecastCard from "./SalesForecastCard";
+import ProductVisual from "./ProductVisual";
 
 type Stats = {
   revenue: number; revenue_today: number; orders: number; pending_orders: number; users: number;
@@ -71,7 +71,7 @@ export default function AdminClient({ view = "dashboard" }: { view?: string }) {
     {loading ? <div className="adminSkeleton" /> : <div className="adminProductTable">
       <header><span>محصول</span><span>دسته و برند</span><span>قیمت</span><span>موجودی</span><span>وضعیت</span><span>عملیات</span></header>
       {filtered.map(product => <article key={product.id}>
-        <div className="adminProduct"><span>{product.primary_image ? <img src={product.primary_image} alt="" /> : <Package size={22} />}</span><div><b>{product.name}</b><small>{product.sku}</small></div></div>
+        <div className="adminProduct"><span><ProductVisual name={product.name} slug={product.slug} image={product.primary_image} decorative /></span><div><b>{product.name}</b><small>{product.sku}</small></div></div>
         <div><b>{product.category.name}</b><small>{product.brand.name}</small></div><strong>{formatPrice(product.base_price)}</strong>
         <span className={product.total_stock ? "stockGood" : "stockBad"}>{product.total_stock ? `${product.total_stock} عدد` : "ناموجود"}</span>
         <button className={`statusPill ${product.is_active ? "on" : "off"}`} onClick={() => toggle(product)}>{product.is_active ? "فعال" : "غیرفعال"}</button>
@@ -91,7 +91,6 @@ export default function AdminClient({ view = "dashboard" }: { view?: string }) {
         <Link aria-label="مدیریت کاربران" className="adminStatLink" href="/admin/users"><article><i><Users /></i><span>مشتریان</span><b>{stats.users.toLocaleString("fa-IR")}</b><small>مدیریت کاربران ←</small></article></Link>
         <Link aria-label="مدیریت محصولات" className="adminStatLink" href="/admin/products"><article><i><Package /></i><span>محصولات</span><b>{stats.products.toLocaleString("fa-IR")}</b><small>{stats.out_of_stock.toLocaleString("fa-IR")} کالای ناموجود ←</small></article></Link>
       </div>
-      <SalesForecastCard />
       <div className="adminDashboardGrid">
         <section className="adminChartPanel"><header><div><span>نمودار فروش</span><h3>عملکرد ۳۰ روز اخیر</h3></div><b>{formatPrice(stats.revenue)}</b></header><div className="modernChart">
           {stats.chart.length ? stats.chart.map((item, index) => <div key={index}><i style={{ height: `${Math.max(8, item.revenue / maxRevenue * 100)}%` }} title={`${item.day} — ${formatPrice(item.revenue)}`} /><small>{new Date(item.day).toLocaleDateString("fa-IR", { day: "numeric", month: "short" })}</small></div>) : <p>پس از ثبت اولین پرداخت، نمودار فروش اینجا نمایش داده می‌شود.</p>}

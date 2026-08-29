@@ -5,27 +5,27 @@ from apps.core.models import TimeStampedModel
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError("ایمیل الزامی است")
-        email = self.normalize_email(email)
+    def create_user(self, email=None, password=None, **extra_fields):
+        email = self.normalize_email(email) if email else None
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
     def create_superuser(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("ایمیل مدیر الزامی است")
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(email, password, **extra_fields)
 
 class User(AbstractUser):
     username = None
-    email = models.EmailField(unique=True, db_index=True)
+    email = models.EmailField(unique=True, null=True, blank=True, db_index=True)
     phone = models.CharField(max_length=15, unique=True, db_index=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["phone"]
     objects = UserManager()
-    def __str__(self): return self.get_full_name() or self.email
+    def __str__(self): return self.get_full_name() or self.email or self.phone
 
 class Address(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses")

@@ -6,7 +6,7 @@ services:
     region: frankfurt
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    healthCheckPath: /admin/login/
+    healthCheckPath: /api/v1/health/
     initialDeployHook: python manage.py seed_data
     envVars:
       - key: DATABASE_URL

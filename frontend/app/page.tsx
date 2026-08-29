@@ -18,7 +18,7 @@ export default async function Home() {
   return <SiteChrome><main className="homePage">
     <HeroSlider products={heroProducts}/>
     <section className="quickCategories shell"><a href="/shop" className="quickCategory all"><span><Sparkles /></span><b>مشاهده همه</b></a>{categories.map((c,index)=>{const Icon=categoryIcons[index % categoryIcons.length];return <a href={`/category/${c.slug}`} className="quickCategory" key={c.id}><span><Icon /></span><b>{c.name}</b></a>})}</section>
-    <section className="serviceStrip shell"><div><span><Headset /></span><p><b>پشتیبانی ۲۴/۷</b><small>پاسخگوی شما هستیم</small></p></div><div><span><Zap /></span><p><b>ارسال سریع</b><small>ارسال به سراسر کشور</small></p></div><div><span><RotateCcw /></span><p><b>۷ روز ضمانت بازگشت</b><small>بازگشت کالا بدون قید و شرط</small></p></div><div><span><ShieldCheck /></span><p><b>ضمانت اصالت کالا</b><small>تضمین اصالت و کیفیت محصولات</small></p></div></section>
+    <section className="serviceStrip shell"><div><span><Headset /></span><p><b>پشتیبانی پاسخ‌گو</b><small>{configuration.support_hours}</small></p></div><div><span><Zap /></span><p><b>ارسال سریع</b><small>ارسال به سراسر کشور</small></p></div><div><span><RotateCcw /></span><p><b>{configuration.return_days.toLocaleString("fa-IR")} روز مهلت درخواست بازگشت</b><small>طبق شرایط بازگشت کالا</small></p></div><div><span><ShieldCheck /></span><p><b>ضمانت اصالت کالا</b><small>تضمین اصالت و کیفیت محصولات</small></p></div></section>
     {!hasHomeProducts && <HomeProductRecovery />}
     <FlashSaleSection products={offers} configuration={configuration} />
     <BrandSection brands={brands} />

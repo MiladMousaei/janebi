@@ -12,6 +12,23 @@ def test_register_login_refresh(api):
     assert api.post("/api/v1/auth/refresh/", {"refresh": response.data["refresh"]}).status_code == 200
 
 @pytest.mark.django_db
+def test_register_without_email_and_six_character_password(api):
+    payload = {"first_name": "سارا", "last_name": "محمدی", "phone": "09124444444", "password": "abc123", "confirm_password": "abc123"}
+    response = api.post("/api/v1/auth/register/", payload, format="json")
+    assert response.status_code == 201
+    user = User.objects.get(phone=payload["phone"])
+    assert user.email is None
+    login = api.post("/api/v1/auth/login/", {"identifier": payload["phone"], "password": payload["password"]}, format="json")
+    assert login.status_code == 200 and "access" in login.data
+
+@pytest.mark.django_db
+def test_register_rejects_short_password_in_persian(api):
+    payload = {"first_name": "سارا", "last_name": "محمدی", "phone": "09125555555", "password": "12345", "confirm_password": "12345"}
+    response = api.post("/api/v1/auth/register/", payload, format="json")
+    assert response.status_code == 400
+    assert "حداقل ۶ کاراکتر" in str(response.data["errors"]["password"][0])
+
+@pytest.mark.django_db
 def test_products_search_and_filter(api, product):
     assert api.get("/api/v1/products/?search=شارژر&availability=true").status_code == 200
 

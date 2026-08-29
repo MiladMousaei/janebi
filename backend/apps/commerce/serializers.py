@@ -67,7 +67,8 @@ class StoreConfigurationSerializer(serializers.ModelSerializer):
         model = StoreConfiguration
         fields = [
             "flash_sale_title", "flash_sale_ends_at", "flash_sale_enabled",
-            "shop_banner_title", "shop_banner_subtitle", "updated_at",
+            "shop_banner_title", "shop_banner_subtitle", "support_phone",
+            "support_email", "support_hours", "return_days", "updated_at",
         ]
         read_only_fields = ["updated_at"]
 

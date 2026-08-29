@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { ArrowUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function ScrollExperience() {
+  const [showBackToTop, setShowBackToTop] = useState(false);
   useEffect(() => {
     const progress = document.querySelector<HTMLElement>(".scrollProgress");
     let ticking = false;
@@ -16,6 +18,7 @@ export default function ScrollExperience() {
         const max = document.documentElement.scrollHeight - window.innerHeight;
         if (progress) progress.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
         document.documentElement.style.setProperty("--magic-scroll", `${Math.min(window.scrollY, 700)}px`);
+        setShowBackToTop(window.scrollY > 560);
         ticking = false;
       });
     };
@@ -57,5 +60,5 @@ export default function ScrollExperience() {
       window.removeEventListener("scroll", updateProgress);
     };
   }, []);
-  return <div className="scrollProgress" aria-hidden="true" />;
+  return <><div className="scrollProgress" aria-hidden="true" /><button type="button" className={`backToTop ${showBackToTop ? "visible" : ""}`} aria-label="بازگشت به بالای صفحه" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><ArrowUp aria-hidden="true" /></button></>;
 }

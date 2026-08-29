@@ -307,12 +307,20 @@ def store_configuration(request):
 
 
 @extend_schema(request=OpenApiTypes.OBJECT, responses=SMSMessageSerializer(many=True))
-@api_view(["GET", "POST"])
+@api_view(["GET", "POST", "DELETE"])
 @permission_classes([permissions.IsAdminUser])
 def admin_sms(request):
     if request.method == "GET":
         messages = SMSMessage.objects.select_related("recipient")[:100]
         return Response(SMSMessageSerializer(messages, many=True).data)
+
+    if request.method == "DELETE":
+        message_id = request.data.get("id") or request.query_params.get("id")
+        if not message_id:
+            return Response({"id": ["شناسه پیامک الزامی است."]}, status=status.HTTP_400_BAD_REQUEST)
+        sms = get_object_or_404(SMSMessage, pk=message_id)
+        sms.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     text = str(request.data.get("message", "")).strip()
     audience = request.data.get("audience", "selected")

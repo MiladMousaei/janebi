@@ -166,3 +166,12 @@ class SupportAndStoreManagementTests(TestCase):
         self.assertEqual(response.data[0]["status"], "queued")
         self.assertTrue(SMSMessage.objects.filter(recipient=self.user).exists())
         self.assertTrue(Notification.objects.filter(user=self.user, kind="admin_message").exists())
+
+    def test_admin_can_delete_sms_history(self):
+        sms = SMSMessage.objects.create(
+            recipient=self.user, phone=self.user.phone, message="پیام آزمایشی", sent_by=self.admin
+        )
+        self.client.force_authenticate(self.admin)
+        response = self.client.delete("/api/v1/admin/sms/", {"id": sms.id}, format="json")
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(SMSMessage.objects.filter(pk=sms.id).exists())

@@ -20,7 +20,7 @@ export default function HeroSlider({ products }: { products: Product[] }) {
       <div className="premiumHeroTrust">
         <span><ShieldCheck size={19} /><b>ضمانت اصالت</b></span>
         <span><Zap size={19} /><b>ارسال سریع</b></span>
-        <span><PackageCheck size={19} /><b>۷ روز بازگشت</b></span>
+        <span><PackageCheck size={19} /><b>بازگشت طبق قوانین</b></span>
       </div>
     </div>
   </section>;

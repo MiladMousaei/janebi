@@ -6,6 +6,7 @@ import { API_URL, formatPrice } from "../lib/api";
 import { announceCartChange, notify } from "../lib/notify";
 import type { Product } from "../lib/types";
 import FavoriteButton from "./FavoriteButton";
+import { addGuestItem } from "../lib/guestCart";
 
 export default function ProductPurchase({ product }: { product: Product }) {
   const available = product.variants?.filter(variant => variant.stock > 0) || [];
@@ -14,11 +15,15 @@ export default function ProductPurchase({ product }: { product: Product }) {
   const variant = useMemo(() => product.variants?.find(item => item.id === variantId), [variantId, product]);
   async function add(buy = false) {
     const token = localStorage.getItem("access_token");
-    if (!token) { location.href = `/login?next=/product/${product.slug}`; return; }
     try {
-      const response = await fetch(`${API_URL}/cart/add/`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ product: product.id, variant: variantId, quantity }) });
-      if (!response.ok) throw new Error();
-      announceCartChange(); notify(`${quantity.toLocaleString("fa-IR")} عدد از این محصول به سبد اضافه شد.`);
+      if (!variant) throw new Error();
+      if (!token) addGuestItem(product, variant, quantity);
+      else {
+        const response = await fetch(`${API_URL}/cart/add/`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ product: product.id, variant: variantId, quantity }) });
+        if (!response.ok) throw new Error();
+        announceCartChange();
+      }
+      notify(`${quantity.toLocaleString("fa-IR")} عدد از این محصول به سبد اضافه شد.`);
       if (buy) location.href = "/cart";
     } catch { notify("امکان افزودن محصول وجود ندارد؛ موجودی را بررسی کنید.", "error"); }
   }

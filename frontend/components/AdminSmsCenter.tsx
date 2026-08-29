@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { LoaderCircle, MessageSquareText, Phone, Search, Send, Users } from "lucide-react";
+import { LoaderCircle, MessageSquareText, Phone, Search, Send, Trash2, Users } from "lucide-react";
 import { API_URL } from "../lib/api";
 import { authFetch } from "../lib/authFetch";
 import { notify } from "../lib/notify";
@@ -20,6 +20,7 @@ export default function AdminSmsCenter() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [deleting, setDeleting] = useState<number | null>(null);
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
   const load = useCallback(async () => {
@@ -48,6 +49,14 @@ export default function AdminSmsCenter() {
     else notify(Object.values(body).flat().join("، ") || "ارسال پیامک انجام نشد.", "error");
     setSending(false);
   }
+  async function remove(id: number) {
+    if (!window.confirm("این پیام از تاریخچه حذف شود؟")) return;
+    setDeleting(id);
+    const response = await authFetch(`/admin/sms/?id=${id}`, { method: "DELETE" });
+    if (response.ok) { setHistory(items => items.filter(item => item.id !== id)); notify("پیام از تاریخچه حذف شد.", "info"); }
+    else notify("حذف پیام انجام نشد.", "error");
+    setDeleting(null);
+  }
 
   return <AdminShell title="ارسال پیامک" eyebrow="ارتباط مستقیم با مشتریان">
     <div className="smsWorkspace">
@@ -57,7 +66,7 @@ export default function AdminSmsCenter() {
         <label className="smsText">متن پیام<textarea value={message} onChange={event => setMessage(event.target.value)} required maxLength={500} placeholder="متن پیامک را اینجا بنویسید…" /><small>{message.length.toLocaleString("fa-IR")} از ۵۰۰ کاراکتر</small></label>
         <button className="button primary" disabled={sending || !message.trim() || audience === "selected" && !selected.length}>{sending ? <LoaderCircle className="spin" /> : <Send />} ارسال پیامک</button>
       </form>
-      <section className="smsHistory"><header><div><small>گزارش ارسال</small><h2>پیام‌های اخیر</h2></div><b>{history.length.toLocaleString("fa-IR")}</b></header><div>{history.map(item => <article key={item.id}><span><Phone /></span><div><b>{item.recipient_name}</b><small dir="ltr">{item.phone}</small><p>{item.message}</p>{item.error_message && <em>{item.error_message}</em>}</div><i className={`smsStatus ${item.status}`}>{statusLabels[item.status] || item.status}</i><time>{new Date(item.created_at).toLocaleString("fa-IR")}</time></article>)}{!history.length && !loading && <p className="smsEmpty">هنوز پیامکی ثبت نشده است.</p>}</div></section>
+      <section className="smsHistory"><header><div><small>گزارش ارسال</small><h2>پیام‌های اخیر</h2></div><b>{history.length.toLocaleString("fa-IR")}</b></header><div>{history.map(item => <article key={item.id}><span><Phone /></span><div><b>{item.recipient_name}</b><small dir="ltr">{item.phone}</small><p>{item.message}</p>{item.error_message && <em>{item.error_message}</em>}</div><i className={`smsStatus ${item.status}`}>{statusLabels[item.status] || item.status}</i><time>{new Date(item.created_at).toLocaleString("fa-IR")}</time><button className="smsDelete" type="button" onClick={() => remove(item.id)} disabled={deleting === item.id} aria-label={`حذف پیام ${item.recipient_name}`}>{deleting === item.id ? <LoaderCircle className="spin" /> : <Trash2 />}</button></article>)}{!history.length && !loading && <p className="smsEmpty">هنوز پیامکی ثبت نشده است.</p>}</div></section>
     </div>
   </AdminShell>;
 }

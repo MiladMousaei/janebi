@@ -6,11 +6,12 @@ import { useEffect, useState } from "react";
 import SearchBox from "./SearchBox";
 import { API_URL } from "../lib/api";
 import NotificationCenter from "./NotificationCenter";
+import { guestCartCount } from "../lib/guestCart";
 
-export default function SiteHeader() {
+export default function SiteHeader({ supportPhone = "" }: { supportPhone?: string }) {
   const [cartCount, setCartCount] = useState(0);
   useEffect(() => {
-    function loadCart() { const token = localStorage.getItem("access_token"); if (!token) return; fetch(`${API_URL}/cart/`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null).then(data => data && setCartCount(data.item_count)); }
+    function loadCart() { const token = localStorage.getItem("access_token"); if (!token) { setCartCount(guestCartCount()); return; } fetch(`${API_URL}/cart/`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null).then(data => data && setCartCount(data.item_count)); }
     loadCart(); window.addEventListener("janebi:cart-updated", loadCart);
     return () => window.removeEventListener("janebi:cart-updated", loadCart);
   }, []);
@@ -27,7 +28,7 @@ export default function SiteHeader() {
     </header>
     <div className="navWrap"><nav className="shell nav">
       <a className="allCategories" href="/shop"><Menu size={18} /> همه دسته‌بندی‌ها</a>
-      <Link href="/">خانه</Link><a href="/shop?ordering=-created_at">جدیدترین‌ها</a><a href="/shop?discount=true">فروش ویژه <i>Hot</i></a><a href="/shop?ordering=-sold_count">پرفروش‌ها</a><a href="/faq">راهنمای خرید</a><a href="/contact">تماس با ما</a><span className="navSupport">پشتیبانی: ۰۲۱-۹۱۰۰۱۲۳۴</span>
+      <Link href="/">خانه</Link><a href="/shop?ordering=-created_at">جدیدترین‌ها</a><a href="/shop?discount=true">فروش ویژه <i>Hot</i></a><a href="/shop?ordering=-sold_count">پرفروش‌ها</a><a href="/faq">راهنمای خرید</a><a href="/contact">تماس با ما</a>{supportPhone && <a className="navSupport" href={`tel:${supportPhone}`} dir="ltr">{supportPhone}</a>}
     </nav></div>
   </>;
 }
