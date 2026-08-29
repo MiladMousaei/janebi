@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return { title: "محصول پیدا نشد | جانبی" };
-  const socialImages = !/^product-\d+$/.test(product.slug) && product.primary_image ? [product.primary_image] : [];
+  const socialImages = product.primary_image ? [product.primary_image] : [];
   return {
     title: product.seo_title || `${product.name} | جانبی`, description: product.short_description,
     alternates: { canonical: `/product/${product.slug}` },

@@ -19,15 +19,21 @@ class Command(BaseCommand):
         device_models = [AttributeValue.objects.get_or_create(attribute=model, value=x)[0] for x in ["استاندارد", "پرو", "پرو مکس"]]
         names = ["قاب مگ‌سیف شفاف", "گلس تمام صفحه", "کابل شارژ سریع", "آداپتور ۲۵ وات", "پاوربانک مگ‌سیف", "هندزفری بی‌سیم", "هدفون نویز کنسلینگ", "اسپیکر قابل حمل", "ساعت هوشمند", "هولدر موبایل خودرو", "شارژر وایرلس", "کابل سه‌کاره", "پاوربانک ۲۰۰۰۰", "میکروفون یقه‌ای", "فن خنک‌کننده موبایل"]
         photo_urls = [
-            "https://images.unsplash.com/photo-1646602481827-0fc1d2344687?auto=format&fit=crop&w=900&q=85",
-            "https://images.unsplash.com/photo-1706290134049-c5c72d24146a?auto=format&fit=crop&w=900&q=85",
-            "https://images.unsplash.com/photo-1595402294828-ea0cf642f017?auto=format&fit=crop&w=900&q=85",
-            "https://images.unsplash.com/photo-1600577231598-31ea4cb50da3?auto=format&fit=crop&w=900&q=85",
-            "https://images.unsplash.com/photo-1566554738544-d962991c3fee?auto=format&fit=crop&w=900&q=85",
-            "https://images.unsplash.com/photo-1739764577422-20863c027cb6?auto=format&fit=crop&w=900&q=85",
-            "https://images.unsplash.com/photo-1654701381095-e56f8ea5117e?auto=format&fit=crop&w=900&q=85",
-            "https://images.unsplash.com/photo-1572183717150-0ca8073a2457?auto=format&fit=crop&w=900&q=85",
-            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=85",
+            "https://images.unsplash.com/photo-1727033497241-a79cf600ec56?auto=format&fit=crop&w=1200&q=82",  # قاب موبایل
+            "https://images.unsplash.com/photo-1567428486597-8c5328fd3816?auto=format&fit=crop&w=1200&q=82",  # محافظ صفحه
+            "https://images.unsplash.com/photo-1555449368-099e5eb46842?auto=format&fit=crop&w=1200&q=82",  # کابل USB
+            "https://images.unsplash.com/photo-1618911138919-dcabd0bd6108?auto=format&fit=crop&w=1200&q=82",  # آداپتور
+            "https://images.unsplash.com/photo-1753802865229-07b76c26cf7e?auto=format&fit=crop&w=1200&q=82",  # پاوربانک مگ‌سیف
+            "https://images.unsplash.com/photo-1738920424218-3d28b951740a?auto=format&fit=crop&w=1200&q=82",  # هندزفری بی‌سیم
+            "https://images.unsplash.com/photo-1505751104546-4b63c93054b1?auto=format&fit=crop&w=1200&q=82",  # هدفون
+            "https://images.unsplash.com/photo-1549400854-b4300f444934?auto=format&fit=crop&w=1200&q=82",  # اسپیکر
+            "https://images.unsplash.com/photo-1722153105551-cfea928e80de?auto=format&fit=crop&w=1200&q=82",  # ساعت هوشمند
+            "https://images.unsplash.com/photo-1679110454518-de036af8adff?auto=format&fit=crop&w=1200&q=82",  # هولدر موبایل
+            "https://images.unsplash.com/photo-1784024130733-980c3998b864?auto=format&fit=crop&w=1200&q=82",  # شارژر بی‌سیم
+            "https://images.unsplash.com/photo-1555449368-099e5eb46842?auto=format&fit=crop&w=1200&q=82",  # کابل سه‌کاره
+            "https://images.unsplash.com/photo-1753802865229-07b76c26cf7e?auto=format&fit=crop&w=1200&q=82",  # پاوربانک
+            "https://images.unsplash.com/photo-1543512214-e643cea604c8?auto=format&fit=crop&w=1200&q=82",  # میکروفون
+            "https://images.unsplash.com/photo-1756576170693-b84e8ffa8ae0?auto=format&fit=crop&w=1200&q=82",  # فن خنک‌کننده
         ]
         products = []
         for i in range(30):
