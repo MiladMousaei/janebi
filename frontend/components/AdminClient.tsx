@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { Package, RefreshCw, Search, ShoppingBag, Trash2, TrendingUp, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { API_URL, formatPrice } from "../lib/api";
+import { formatPrice } from "../lib/api";
+import { authFetch } from "../lib/authFetch";
 import type { Product } from "../lib/types";
 import AdminShell from "./AdminShell";
 import ProductVisual from "./ProductVisual";
@@ -28,15 +29,17 @@ export default function AdminClient({ view = "dashboard" }: { view?: string }) {
   const load = useCallback(async () => {
     if (!token) { location.href = "/login?next=/admin"; return; }
     setLoading(true);
-    const headers = { Authorization: `Bearer ${token}` };
     try {
       if (view === "products") {
-        const response = await fetch(`${API_URL}/products/?page_size=100`, { headers });
+        const response = await authFetch("/products/?page_size=100");
+        if (response.status === 401) { location.href = "/login?next=/admin/products"; return; }
         if (response.status === 403) { location.href = "/account"; return; }
+        if (!response.ok) { setProducts([]); setMsg("دریافت محصولات انجام نشد؛ دوباره تلاش کنید."); return; }
         const data = await response.json();
-        setProducts(data.results || data);
+        setProducts(Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : []);
       } else {
-        const response = await fetch(`${API_URL}/admin/stats/`, { headers });
+        const response = await authFetch("/admin/stats/");
+        if (response.status === 401) { location.href = "/login?next=/admin"; return; }
         if (response.status === 403) { location.href = "/account"; return; }
         if (response.ok) setStats(await response.json());
       }
@@ -53,9 +56,8 @@ export default function AdminClient({ view = "dashboard" }: { view?: string }) {
 
   async function remove(product: Product) {
     if (!window.confirm(`محصول «${product.name}» برای همیشه حذف شود؟ این عملیات قابل بازگشت نیست.`)) return;
-    const response = await fetch(`${API_URL}/products/${product.slug}/`, {
+    const response = await authFetch(`/products/${product.slug}/`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
     });
     if (response.ok) {
       setMsg("محصول با موفقیت حذف شد ✓");
