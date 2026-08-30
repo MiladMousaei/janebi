@@ -14,8 +14,12 @@ type AdminNotification = {
   created_at: string;
 };
 
+function isOrderNotification(kind: string) {
+  return kind.includes("order") || kind.includes("payment");
+}
+
 function destination(kind: string) {
-  return kind === "order_created" ? "/admin/orders" : "/admin/tickets";
+  return isOrderNotification(kind) ? "/admin/orders" : "/admin/tickets";
 }
 
 export default function AdminNotificationCenter() {
@@ -68,7 +72,7 @@ export default function AdminNotificationCenter() {
       <header><div><small>مرکز اعلان‌ها</small><h2>سفارش‌ها و تیکت‌های تازه</h2></div><span>{unread ? `${unread.toLocaleString("fa-IR")} جدید` : "خوانده شد"}</span></header>
       <div className="adminNotificationList">
         {items.length ? items.map(item => <Link href={destination(item.kind)} onClick={() => setOpen(false)} className={item.is_read ? "" : "unread"} key={item.id}>
-          <i>{item.kind === "order_created" ? <ShoppingBag aria-hidden="true" /> : <Headphones aria-hidden="true" />}</i>
+          <i>{isOrderNotification(item.kind) ? <ShoppingBag aria-hidden="true" /> : <Headphones aria-hidden="true" />}</i>
           <span><b>{item.title}</b><p>{item.message}</p><small>{new Date(item.created_at).toLocaleString("fa-IR", { dateStyle: "short", timeStyle: "short" })}</small></span>
         </Link>) : <div className="adminNotificationEmpty"><Bell aria-hidden="true" /><b>اعلان تازه‌ای نیست</b><p>سفارش‌ها و تیکت‌های جدید اینجا نمایش داده می‌شوند.</p></div>}
       </div>
