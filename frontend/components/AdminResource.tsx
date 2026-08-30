@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { formatPrice } from "../lib/api";
 import { authFetch } from "../lib/authFetch";
 import AdminShell from "./AdminShell";
@@ -63,6 +64,19 @@ export default function AdminResource({ view }: { view: View }) {
     setMsg(response.ok ? "تغییرات ذخیره شد ✓" : "به‌روزرسانی ممکن نشد");
     if (response.ok || view === "inventory") await load();
   }
+  async function remove(row: Row) {
+    const label = row.name || row.code || row.title || `${row.first_name || ""} ${row.last_name || ""}`.trim() || `مورد ${row.id}`;
+    if (!window.confirm(`«${label}» برای همیشه حذف شود؟ این عملیات قابل بازگشت نیست.`)) return;
+    const path = view === "users" ? `/admin/users/${row.id}/delete/` : `/${info.endpoint}/${row.slug || row.id}/`;
+    const response = await authFetch(path, { method: "DELETE" });
+    if (response.ok) {
+      setMsg("مورد با موفقیت حذف شد ✓");
+      await load();
+      return;
+    }
+    const error = await response.json().catch(() => ({}));
+    setMsg(error.detail || "حذف این مورد ممکن نشد؛ ممکن است در بخش دیگری استفاده شده باشد.");
+  }
   function setInventoryDraft(id: number, stock: number) { setRows(previous => previous.map(row => row.id === id ? { ...row, stock } : row)); }
 
   const action = view === "categories" || view === "brands" ? <button className="button primary" onClick={() => document.getElementById("quick-create")?.scrollIntoView({ behavior: "smooth" })}>＋ افزودن مورد</button> : undefined;
@@ -72,11 +86,11 @@ export default function AdminResource({ view }: { view: View }) {
     {(["categories", "brands", "coupons"] as View[]).includes(view) && <form id="quick-create" className="quickCreate modern" onSubmit={create}><div><b>{view === "coupons" ? "ساخت کوپن جدید" : "افزودن مورد جدید"}</b><small>اطلاعات را وارد و ذخیره کنید</small></div>{view === "coupons" ? <><input name="code" placeholder="کد کوپن" required dir="ltr" /><select name="discount_type"><option value="percentage">درصدی</option><option value="fixed">مبلغ ثابت</option></select><input name="discount_value" type="number" placeholder="مقدار تخفیف" required /><input name="minimum_order_amount" type="number" placeholder="حداقل سفارش" /><input name="maximum_discount" type="number" placeholder="سقف تخفیف" /><input name="usage_limit" type="number" placeholder="تعداد استفاده" /></> : <><input name="name" placeholder="نام فارسی" required /><input name="slug" placeholder="slug" required dir="ltr" /></>}<button className="button primary">ذخیره</button></form>}
     {loading ? <div className="adminSkeleton" /> : <div className={`resourceTable modern ${view}`}>
       {filtered.map(row => <article key={row.id}>
-        {view === "categories" || view === "brands" ? <><div className="resourceName"><i>{row.name?.slice(0, 1)}</i><div><b>{row.name}</b><small>شناسه {row.id}</small></div></div><code>{row.slug}</code><span className="statusPill on">فعال</span><button onClick={() => patch(row, { is_active: false })}>غیرفعال‌سازی</button></> : null}
+        {view === "categories" || view === "brands" ? <><div className="resourceName"><i>{row.name?.slice(0, 1)}</i><div><b>{row.name}</b><small>شناسه {row.id}</small></div></div><code>{row.slug}</code><span className={`statusPill ${row.is_active ? "on" : "off"}`}>{row.is_active ? "فعال" : "غیرفعال"}</span><div className="resourceActions"><button onClick={() => patch(row, { is_active: !row.is_active })}>{row.is_active ? "غیرفعال‌سازی" : "فعال‌سازی"}</button><button className="deleteAction" aria-label={`حذف ${row.name}`} onClick={() => void remove(row)}><Trash2 aria-hidden="true" /><span>حذف</span></button></div></> : null}
         {view === "orders" ? <><div><b>{row.order_number}</b><small>سفارش فروشگاه</small></div><strong>{formatPrice(row.final_amount || 0)}</strong><span>{row.payment_status === "paid" ? "پرداخت موفق" : "در انتظار پرداخت"}</span><select value={row.status} onChange={event => patch(row, { status: event.target.value }, `/orders/${row.order_number}/set_status/`)}>{Object.entries(statuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></> : null}
-        {view === "users" ? <><div className="resourceName"><i>{row.first_name?.slice(0, 1) || "ک"}</i><div><b>{row.first_name} {row.last_name}</b><small>{row.email}</small></div></div><span>{row.phone || "—"}</span><b>{(row.order_count || 0).toLocaleString("fa-IR")} سفارش</b><button className={`statusPill ${row.is_active ? "on" : "off"}`} onClick={() => patch(row, { is_active: !row.is_active }, `/admin/users/${row.id}/set_active/`)}>{row.is_active ? "فعال" : "مسدود"}</button></> : null}
-        {view === "coupons" ? <><div><b dir="ltr">{row.code}</b><small>{row.discount_type === "percentage" ? "درصدی" : "مبلغ ثابت"}</small></div><strong>{row.discount_type === "percentage" ? `${row.discount_value}٪` : formatPrice(row.discount_value || 0)}</strong><span className={`statusPill ${row.is_active ? "on" : "off"}`}>{row.is_active ? "فعال" : "غیرفعال"}</span><button onClick={() => patch(row, { is_active: !row.is_active })}>{row.is_active ? "توقف" : "فعال‌سازی"}</button></> : null}
-        {view === "reviews" ? <><div><b>{row.title}</b><small>{"★".repeat(row.rating || 0)}</small></div><p>{row.comment}</p><span className={`statusPill ${row.is_approved ? "on" : "off"}`}>{row.is_approved ? "تأییدشده" : "در انتظار"}</span><button onClick={() => patch(row, { is_approved: !row.is_approved }, `/reviews/${row.id}/moderate/`)}>{row.is_approved ? "لغو تأیید" : "تأیید نظر"}</button></> : null}
+        {view === "users" ? <><div className="resourceName"><i>{row.first_name?.slice(0, 1) || "ک"}</i><div><b>{row.first_name} {row.last_name}</b><small>{row.email}</small></div></div><span>{row.phone || "—"}</span><b>{(row.order_count || 0).toLocaleString("fa-IR")} سفارش</b><div className="resourceActions"><button className={`statusPill ${row.is_active ? "on" : "off"}`} onClick={() => patch(row, { is_active: !row.is_active }, `/admin/users/${row.id}/set_active/`)}>{row.is_active ? "فعال" : "مسدود"}</button><button className="deleteAction" aria-label={`حذف ${row.first_name || "کاربر"}`} onClick={() => void remove(row)}><Trash2 aria-hidden="true" /><span>حذف</span></button></div></> : null}
+        {view === "coupons" ? <><div><b dir="ltr">{row.code}</b><small>{row.discount_type === "percentage" ? "درصدی" : "مبلغ ثابت"}</small></div><strong>{row.discount_type === "percentage" ? `${row.discount_value}٪` : formatPrice(row.discount_value || 0)}</strong><span className={`statusPill ${row.is_active ? "on" : "off"}`}>{row.is_active ? "فعال" : "غیرفعال"}</span><div className="resourceActions"><button onClick={() => patch(row, { is_active: !row.is_active })}>{row.is_active ? "توقف" : "فعال‌سازی"}</button><button className="deleteAction" aria-label={`حذف کوپن ${row.code}`} onClick={() => void remove(row)}><Trash2 aria-hidden="true" /><span>حذف</span></button></div></> : null}
+        {view === "reviews" ? <><div><b>{row.title}</b><small>{"★".repeat(row.rating || 0)}</small></div><p>{row.comment}</p><span className={`statusPill ${row.is_approved ? "on" : "off"}`}>{row.is_approved ? "تأییدشده" : "در انتظار"}</span><div className="resourceActions"><button onClick={() => patch(row, { is_approved: !row.is_approved }, `/reviews/${row.id}/moderate/`)}>{row.is_approved ? "لغو تأیید" : "تأیید نظر"}</button><button className="deleteAction" aria-label={`حذف نظر ${row.title}`} onClick={() => void remove(row)}><Trash2 aria-hidden="true" /><span>حذف</span></button></div></> : null}
         {view === "inventory" ? <><div><b>{row.product_name}</b><small>{row.sku}</small></div><label>موجودی این تنوع<input type="number" min="0" value={row.stock ?? 0} disabled={!row.is_active} onChange={event => setInventoryDraft(row.id, Math.max(0, Number(event.target.value)))} onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); }} onBlur={event => patch(row, { stock: Number(event.target.value) })} /></label><div className="inventoryTotals"><span className={!row.is_active ? "stockBad" : (row.stock || 0) <= (row.low_stock_threshold || 0) ? "stockBad" : "stockGood"}>{!row.is_active ? "خارج از موجودی" : (row.stock || 0) <= (row.low_stock_threshold || 0) ? "نیاز به تأمین" : "موجودی مناسب"}</span><small>موجودی کل محصول: <b>{(row.product_total_stock || 0).toLocaleString("fa-IR")}</b></small></div><button className="inventoryToggle" onClick={() => patch(row, row.is_active ? { stock: 0, is_active: false } : { is_active: true })}>{row.is_active ? "حذف از موجودی" : "فعال‌سازی دوباره"}</button></> : null}
       </article>)}
       {!filtered.length && <div className="adminEmpty">موردی برای نمایش پیدا نشد.</div>}

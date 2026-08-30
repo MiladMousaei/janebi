@@ -73,6 +73,8 @@ class Product(TimeStampedModel):
 class ProductImage(TimeStampedModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="products/%Y/%m/", blank=True, validators=[FileExtensionValidator(["jpg", "jpeg", "png", "webp"]), validate_image_size])
+    image_blob = models.BinaryField(blank=True, default=bytes, editable=False)
+    image_content_type = models.CharField(max_length=50, blank=True)
     external_url = models.URLField(max_length=700, blank=True)
     alt_text = models.CharField(max_length=220, blank=True)
     is_primary = models.BooleanField(default=False)

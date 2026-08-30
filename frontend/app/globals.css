@@ -253,3 +253,35 @@ body{font-size:var(--text-base);line-height:1.75}
   .resourceTable.modern article,.resourceTable.inventory article{min-width:0!important;grid-template-columns:minmax(0,1fr) auto!important;gap:11px;padding:14px;border:1px solid #e1e8f0!important;border-radius:14px;background:#fff;box-shadow:0 8px 22px #10284a08}.resourceTable.modern article>*{min-width:0;max-width:100%}.resourceTable.modern .resourceName,.resourceTable.modern article>div:first-child,.resourceTable.modern article>p{grid-column:1/-1}.resourceTable.modern article>button,.resourceTable.modern article>select{min-height:40px}.resourceTable.modern code{overflow-wrap:anywhere}.resourceTable.inventory article>label,.resourceTable.inventory .inventoryTotals{grid-column:1/-1}.resourceTable.inventory input{width:100%!important}.resourceTable.inventory .inventoryToggle{grid-column:1/-1;width:100%}
   .quickCreate.modern>div{min-width:0}.quickCreate.modern input,.quickCreate.modern select{min-width:0!important}.smsHistory article{grid-template-columns:38px minmax(0,1fr) auto}.smsDelete{bottom:10px}.storeSettingsCard input,.storeSettingsCard textarea{font-size:16px}.footerGrid{grid-template-columns:1fr!important}.footerIntro{grid-column:auto!important}
 }
+
+/* 2026-08 responsive navigation, durable image upload and destructive actions */
+@media(min-width:901px){
+  .nav{position:relative;justify-content:center!important;gap:clamp(18px,2.1vw,30px)!important}
+  .nav .allCategories{order:0!important;margin:0!important}
+  .navSupport{position:absolute;left:0;margin:0!important}
+}
+.adminProduct>span{position:relative;isolation:isolate;contain:paint}
+.adminProduct>span>.semanticProductVisual{position:static!important;inset:auto!important;width:100%!important;height:100%!important;min-height:0!important}
+.imageSourceGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,.55fr);align-items:end;gap:12px;margin-bottom:14px}
+.imageSourceGrid>label{margin-bottom:0!important}
+.imageUploadButton{min-height:58px;padding:8px 12px!important;border:1px dashed #9ebbe5;border-radius:11px;background:#f4f8ff;color:#1769ff;display:flex!important;align-items:center!important;flex-direction:row!important;gap:10px!important;cursor:pointer;transition:.2s}
+.imageUploadButton:hover,.imageUploadButton:focus-within{border-color:#1769ff;background:#eaf2ff;box-shadow:0 0 0 3px #1769ff17}
+.imageUploadButton>svg{width:24px;height:24px;flex:0 0 auto}.imageUploadButton>span{min-width:0;display:flex;flex-direction:column;gap:2px}.imageUploadButton b{font-size:13px}.imageUploadButton small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#617894;font-size:11px}
+.adminImageEmpty{height:128px;margin-bottom:15px;border:1px dashed #cfdae8;border-radius:12px;background:#f7f9fc;color:#8291a5;display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px}.adminImageEmpty svg{width:22px}
+.productStatusActions,.resourceActions{display:flex;align-items:center;gap:8px;min-width:0}.resourceActions>button{min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.deleteAction{min-width:40px;min-height:40px;padding:8px!important;border:1px solid #f0bbc4!important;border-radius:10px!important;background:#fff5f6!important;color:#ba2741!important;cursor:pointer}.deleteAction:hover{border-color:#d94a61!important;background:#ffe9ed!important}.deleteAction svg{width:18px;height:18px;flex:0 0 auto}.productStatusActions .statusPill{min-height:40px;padding-inline:12px}
+.cartItem .remove{min-height:44px;padding:8px 10px!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;cursor:pointer}.cartItem .remove svg{width:19px;height:19px;flex:0 0 auto}
+@media(max-width:640px){
+  .adminTopbar{display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;gap:12px!important;min-height:98px!important;height:auto!important;padding:14px 0!important;align-items:center!important}
+  .adminMenu{position:static!important;grid-column:1;width:44px;height:44px;align-self:start;z-index:1}
+  .adminTopbar .adminHead{grid-column:2;min-width:0;width:100%;display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;flex-wrap:nowrap!important}
+  .adminHead>div{min-width:0!important}.adminTopbar .adminHead>.button{position:static!important;max-width:none!important;margin:0!important;min-height:44px;padding-inline:12px;white-space:nowrap;z-index:0}
+  .adminProduct>span{width:58px;height:58px;border-radius:10px}.adminProduct>span>.semanticProductVisual{border-radius:10px}
+  .resourceActions{grid-column:1/-1;width:100%}.resourceActions>button{flex:1;min-height:44px}.productStatusActions{justify-self:end}.productStatusActions .deleteAction{width:44px;height:44px}
+  .imageSourceGrid{grid-template-columns:1fr}.imageUploadButton{min-height:64px}.adminImagePreview,.adminImageEmpty{height:150px;max-width:100%}.adminImagePreview img{height:150px!important;max-height:150px!important}
+  .cartItem{position:relative;grid-template-columns:84px minmax(0,1fr)!important;align-items:start;gap:12px!important;padding:14px!important}.cartThumb{width:84px;height:104px;overflow:hidden}.cartThumb .productVisual{width:100%!important;height:100%!important;padding:5px!important;object-fit:contain!important;background:#f6f8fb}.cartItem>div:nth-child(2){min-width:0}.cartItem>div:nth-child(2) b{display:block;line-height:1.75}.cartItem .quantity{grid-column:2!important;width:100%;margin-top:2px}.cartItem .quantity button{flex:1;min-height:42px}.cartItem .remove{grid-column:2!important;width:max-content!important;justify-self:start;margin:0;padding-inline:12px!important}
+  .productArt{height:190px!important;background:#f7f9fc}.productArt>.productVisual{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;padding:10px!important;background:#f7f9fc}.mainImage>.productVisual{object-fit:contain!important;padding:12px!important}
+}
+@media(max-width:390px){
+  .adminTopbar{align-items:start!important}.adminTopbar .adminHead{grid-template-columns:1fr}.adminTopbar .adminHead>.button{width:100%;justify-self:stretch}
+  .productArt{height:220px!important}
+}

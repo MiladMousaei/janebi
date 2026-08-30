@@ -7,10 +7,11 @@ function clearSession() {
 }
 
 export async function authFetch(path: string, options: RequestInit = {}) {
+  const hasJsonBody = Boolean(options.body) && !(options.body instanceof FormData);
   const request = (access: string | null) => fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(hasJsonBody ? { "Content-Type": "application/json" } : {}),
       ...options.headers,
       ...(access ? { Authorization: `Bearer ${access}` } : {}),
     },

@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from .models import Attribute, AttributeValue, Brand, Category, Product, ProductImage, ProductVariant, Review
 
@@ -27,14 +28,22 @@ class VariantSerializer(serializers.ModelSerializer):
     effective_price = serializers.IntegerField(read_only=True)
     class Meta: model = ProductVariant; fields = ["id", "sku", "price", "effective_price", "stock", "low_stock_threshold", "is_active", "attributes"]
 
+def product_image_url(obj, request=None) -> str | None:
+    if obj.external_url:
+        return obj.external_url
+    if obj.image_blob:
+        path = f"/api/v1/product-images/{obj.pk}/content/"
+        return request.build_absolute_uri(path) if request else path
+    if obj.image:
+        return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+    return None
+
+
 class ImageSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     class Meta: model = ProductImage; fields = ["id", "image", "external_url", "url", "alt_text", "is_primary", "sort_order"]
     def get_url(self, obj) -> str | None:
-        if obj.external_url: return obj.external_url
-        if not obj.image: return None
-        request = self.context.get("request")
-        return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+        return product_image_url(obj, self.context.get("request"))
 
 class ReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
@@ -56,10 +65,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta: model = Product; fields = ["id", "name", "slug", "sku", "short_description", "brand", "category", "base_price", "compare_at_price", "discount_percent", "primary_image", "average_rating", "total_stock", "is_active", "is_new", "is_featured", "sold_count", "view_count"]
     def get_primary_image(self, obj) -> str | None:
         image = next(iter(obj.images.all()), None)
-        if not image: return None
-        if image.external_url: return image.external_url
-        if not image.image: return None
-        return self.context["request"].build_absolute_uri(image.image.url) if "request" in self.context else image.image.url
+        return product_image_url(image, self.context.get("request")) if image else None
 
 class ProductDetailSerializer(ProductListSerializer):
     images = ImageSerializer(many=True, read_only=True)
@@ -74,15 +80,39 @@ class ProductDetailSerializer(ProductListSerializer):
 
 class ProductWriteSerializer(serializers.ModelSerializer):
     primary_image_url = serializers.URLField(write_only=True, required=False, allow_blank=True, max_length=700)
+    primary_image_file = serializers.ImageField(write_only=True, required=False, allow_empty_file=False)
     variant_sku = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=80)
     variant_stock = serializers.IntegerField(write_only=True, required=False, min_value=0)
     class Meta: model = Product; fields = "__all__"
     def _save_extras(self, product, data):
+        uploaded = data.get("primary_image_file")
         image_url = data.get("primary_image_url")
-        if image_url is not None:
+        if uploaded is not None:
+            try:
+                from .models import validate_image_size
+                validate_image_size(uploaded)
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError({"primary_image_file": exc.messages}) from exc
+            primary = product.images.filter(is_primary=True).first() or product.images.first()
+            if not primary:
+                primary = ProductImage(product=product, is_primary=True)
+            primary.image_blob = uploaded.read()
+            primary.image_content_type = getattr(uploaded, "content_type", "") or "image/jpeg"
+            primary.external_url = ""
+            primary.image = ""
+            primary.alt_text = product.name
+            primary.is_primary = True
+            primary.save()
+        elif image_url is not None:
             primary = product.images.filter(is_primary=True).first() or product.images.first()
             if primary:
-                primary.external_url = image_url; primary.is_primary = True; primary.save(update_fields=["external_url", "is_primary", "updated_at"])
+                primary.external_url = image_url
+                primary.image_blob = b""
+                primary.image_content_type = ""
+                primary.image = ""
+                primary.alt_text = product.name
+                primary.is_primary = True
+                primary.save(update_fields=["external_url", "image_blob", "image_content_type", "image", "alt_text", "is_primary", "updated_at"])
             elif image_url:
                 ProductImage.objects.create(product=product, external_url=image_url, alt_text=product.name, is_primary=True)
         if "variant_stock" in data or data.get("variant_sku"):
@@ -94,8 +124,8 @@ class ProductWriteSerializer(serializers.ModelSerializer):
             else:
                 ProductVariant.objects.create(product=product, sku=sku, stock=stock)
     def create(self, validated_data):
-        extras = {key: validated_data.pop(key) for key in ["primary_image_url", "variant_sku", "variant_stock"] if key in validated_data}
+        extras = {key: validated_data.pop(key) for key in ["primary_image_url", "primary_image_file", "variant_sku", "variant_stock"] if key in validated_data}
         product = super().create(validated_data); self._save_extras(product, extras); return product
     def update(self, instance, validated_data):
-        extras = {key: validated_data.pop(key) for key in ["primary_image_url", "variant_sku", "variant_stock"] if key in validated_data}
+        extras = {key: validated_data.pop(key) for key in ["primary_image_url", "primary_image_file", "variant_sku", "variant_stock"] if key in validated_data}
         product = super().update(instance, validated_data); self._save_extras(product, extras); return product

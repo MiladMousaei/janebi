@@ -4,6 +4,7 @@ from urllib import error as urllib_error
 from urllib import request as urllib_request
 
 from django.db.models import Count, Sum
+from django.db.models.deletion import ProtectedError
 from django.db.models.functions import TruncDay
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, render
@@ -353,6 +354,22 @@ class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
         if user == request.user: return Response({"detail": "نمی‌توانید حساب مدیر فعلی را غیرفعال کنید."}, status=status.HTTP_400_BAD_REQUEST)
         user.is_active = bool(request.data.get("is_active")); user.save(update_fields=["is_active"])
         return Response(self.get_serializer(user).data)
+
+    @action(detail=True, methods=["delete"])
+    def delete(self, request, pk=None):
+        user = self.get_object()
+        if user == request.user:
+            return Response({"detail": "نمی‌توانید حساب مدیر فعلی را حذف کنید."}, status=status.HTTP_400_BAD_REQUEST)
+        if user.is_staff:
+            return Response({"detail": "برای حذف مدیر دیگر ابتدا دسترسی مدیریت او را لغو کنید."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user.delete()
+        except ProtectedError:
+            return Response(
+                {"detail": "این کاربر سابقه سفارش دارد و برای حفظ اطلاعات مالی قابل حذف نیست؛ می‌توانید او را مسدود کنید."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class InventoryViewSet(viewsets.ModelViewSet):
     serializer_class = InventorySerializer; permission_classes = [permissions.IsAdminUser]

@@ -1,23 +1,37 @@
 from django.db.models import Case, Count, F, IntegerField, Q, When
-from rest_framework import permissions, viewsets
-from rest_framework.decorators import action
+from django.db.models.deletion import ProtectedError
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from .filters import ProductFilter
-from .models import Brand, Category, Product, Review
+from .models import Brand, Category, Product, ProductImage, Review
 from .serializers import BrandSerializer, CategorySerializer, ProductDetailSerializer, ProductListSerializer, ProductWriteSerializer, ReviewSerializer
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view): return request.method in permissions.SAFE_METHODS or bool(request.user and request.user.is_staff)
 
-class CategoryViewSet(viewsets.ModelViewSet):
+
+class ProtectedDeleteMixin:
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {"detail": "این مورد در سفارش‌ها یا محصولات استفاده شده و قابل حذف نیست؛ ابتدا آن را غیرفعال کنید."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+class CategoryViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
     serializer_class = CategorySerializer; permission_classes = [IsAdminOrReadOnly]; lookup_field = "slug"
     def get_queryset(self): return Category.objects.filter(is_active=True).annotate(product_count=Count("products")) if not self.request.user.is_staff else Category.objects.annotate(product_count=Count("products"))
 
-class BrandViewSet(viewsets.ModelViewSet):
+class BrandViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
     serializer_class = BrandSerializer; permission_classes = [IsAdminOrReadOnly]; lookup_field = "slug"
     def get_queryset(self): return Brand.objects.filter(is_active=True) if not self.request.user.is_staff else Brand.objects.all()
 
-class ProductViewSet(viewsets.ModelViewSet):
+class ProductViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]; lookup_field = "slug"; filterset_class = ProductFilter
     search_fields = ["name", "short_description", "description", "brand__name", "category__name", "sku", "variants__sku"]
     ordering_fields = ["created_at", "base_price", "sold_count", "view_count", "discount_percent_sort"]
@@ -47,3 +61,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def moderate(self, request, pk=None):
         review = self.get_object(); review.is_approved = bool(request.data.get("is_approved")); review.save(update_fields=["is_approved", "updated_at"])
         return Response(self.get_serializer(review).data)
+
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def product_image_content(request, pk):
+    image = get_object_or_404(ProductImage, pk=pk)
+    if not image.image_blob:
+        raise Http404
+    response = HttpResponse(bytes(image.image_blob), content_type=image.image_content_type or "image/jpeg")
+    response["Cache-Control"] = "public, max-age=604800, immutable"
+    response["X-Content-Type-Options"] = "nosniff"
+    return response

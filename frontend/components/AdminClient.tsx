@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Package, RefreshCw, Search, ShoppingBag, TrendingUp, Users } from "lucide-react";
+import { Package, RefreshCw, Search, ShoppingBag, Trash2, TrendingUp, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { API_URL, formatPrice } from "../lib/api";
 import type { Product } from "../lib/types";
@@ -61,6 +61,21 @@ export default function AdminClient({ view = "dashboard" }: { view?: string }) {
     if (response.ok) await load();
   }
 
+  async function remove(product: Product) {
+    if (!window.confirm(`محصول «${product.name}» برای همیشه حذف شود؟ این عملیات قابل بازگشت نیست.`)) return;
+    const response = await fetch(`${API_URL}/products/${product.slug}/`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      setMsg("محصول با موفقیت حذف شد ✓");
+      await load();
+      return;
+    }
+    const error = await response.json().catch(() => ({}));
+    setMsg(error.detail || "حذف محصول ممکن نشد؛ ممکن است در سفارش‌ها استفاده شده باشد.");
+  }
+
   if (view === "products") return <AdminShell title="مدیریت محصولات" action={<Link className="button primary" href="/admin/products/create">محصول جدید</Link>}>
     <div className="adminToolbar">
       <div className="adminSearch"><Search size={20} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="جستجو با نام، SKU یا برند..." /></div>
@@ -74,7 +89,7 @@ export default function AdminClient({ view = "dashboard" }: { view?: string }) {
         <div className="adminProduct"><span><ProductVisual name={product.name} slug={product.slug} image={product.primary_image} decorative /></span><div><b>{product.name}</b><small>{product.sku}</small></div></div>
         <div><b>{product.category.name}</b><small>{product.brand.name}</small></div><strong>{formatPrice(product.base_price)}</strong>
         <span className={product.total_stock ? "stockGood" : "stockBad"}>{product.total_stock ? `${product.total_stock} عدد` : "ناموجود"}</span>
-        <button className={`statusPill ${product.is_active ? "on" : "off"}`} onClick={() => toggle(product)}>{product.is_active ? "فعال" : "غیرفعال"}</button>
+        <div className="productStatusActions"><button className={`statusPill ${product.is_active ? "on" : "off"}`} onClick={() => toggle(product)}>{product.is_active ? "فعال" : "غیرفعال"}</button><button className="deleteAction" aria-label={`حذف ${product.name}`} title="حذف محصول" onClick={() => void remove(product)}><Trash2 aria-hidden="true" /></button></div>
         <div className="rowActions"><Link href={`/admin/products/${product.id}`}>ویرایش</Link><a href={`/product/${product.slug}`} target="_blank" rel="noreferrer">نمایش</a></div>
       </article>)}
       {!filtered.length && <div className="adminEmpty">محصولی با این مشخصات پیدا نشد.</div>}

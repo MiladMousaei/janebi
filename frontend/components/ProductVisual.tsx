@@ -26,7 +26,7 @@ function visualFor(name: string): Visual {
 export default function ProductVisual({ name, image, className = "", decorative = false }: { name: string; slug?: string; image?: string | null; className?: string; decorative?: boolean }) {
   const [failed, setFailed] = useState(false);
   const visual = visualFor(name);
-  if (image && !failed) return <img className={`productVisual ${className}`} src={image} alt={decorative ? "" : name} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  if (image && !failed) return <img className={`productVisual ${className}`} src={image} alt={decorative ? "" : name} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)} />;
   const Icon = visual.Icon;
   return <span className={`semanticProductVisual ${className}`} data-kind={visual.kind} role={decorative ? undefined : "img"} aria-hidden={decorative || undefined} aria-label={decorative ? undefined : `تصویر ${visual.label}: ${name}`}><span className="semanticProductIcon"><Icon aria-hidden="true" strokeWidth={1.65} /></span><small>{visual.label}</small></span>;
 }

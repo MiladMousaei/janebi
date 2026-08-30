@@ -1,4 +1,7 @@
 import pytest
+from io import BytesIO
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
 from apps.catalog.models import ProductVariant, Review
 from apps.users.models import User
 
@@ -36,7 +39,7 @@ def test_inventory_updates_return_fresh_product_total(api, admin, product):
     api.force_authenticate(admin)
 
     response = api.patch(f"/api/v1/admin/inventory/{first.id}/", {"stock": 3}, format="json")
-    assert response.status_code == 200
+    assert response.status_code == 200, response.data
     assert response.data["stock"] == 3
     assert response.data["product_total_stock"] == 7
 
@@ -44,3 +47,28 @@ def test_inventory_updates_return_fresh_product_total(api, admin, product):
     assert response.status_code == 200
     assert response.data["product_total_stock"] == 3
     assert api.get(f"/api/v1/products/{product.slug}/").data["total_stock"] == 3
+
+
+@pytest.mark.django_db
+def test_admin_can_upload_durable_product_image(api, admin, product):
+    buffer = BytesIO()
+    Image.new("RGB", (2, 2), "blue").save(buffer, format="PNG")
+    png = SimpleUploadedFile(
+        "product.png",
+        buffer.getvalue(),
+        content_type="image/png",
+    )
+    api.force_authenticate(admin)
+    response = api.patch(
+        f"/api/v1/products/{product.slug}/",
+        {"primary_image_file": png},
+        format="multipart",
+    )
+    assert response.status_code == 200, response.data
+    image = product.images.get(is_primary=True)
+    assert bytes(image.image_blob).startswith(b"\x89PNG")
+    assert image.image_content_type == "image/png"
+    detail = api.get(f"/api/v1/products/{product.slug}/")
+    assert f"/api/v1/product-images/{image.id}/content/" in detail.data["primary_image"]
+    content = api.get(f"/api/v1/product-images/{image.id}/content/")
+    assert content.status_code == 200 and content["Content-Type"] == "image/png"
