@@ -3,6 +3,7 @@
 import { FormEvent, InputHTMLAttributes, useState } from "react";
 import { API_URL } from "../lib/api";
 import { mergeGuestCart } from "../lib/guestCart";
+import PasswordInput from "./PasswordInput";
 
 type Mode = "login" | "register";
 type FieldErrors = Record<string, string>;
@@ -78,7 +79,11 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     }
   }
 
-  const field = (name: string, title: string, props: InputHTMLAttributes<HTMLInputElement> = {}) => <label htmlFor={`auth-${name}`}>{title}<input id={`auth-${name}`} name={name} aria-invalid={Boolean(errors[name])} aria-describedby={errors[name] ? `auth-${name}-error` : undefined} onBlur={event => validateElement(event.currentTarget, event.currentTarget.form!)} {...props} />{errors[name] && <small className="fieldError" id={`auth-${name}-error`} role="alert">{errors[name]}</small>}</label>;
+  const field = (name: string, title: string, props: InputHTMLAttributes<HTMLInputElement> = {}) => {
+    const shared = { id: `auth-${name}`, name, "aria-invalid": Boolean(errors[name]), "aria-describedby": errors[name] ? `auth-${name}-error` : undefined, onBlur: (event: React.FocusEvent<HTMLInputElement>) => validateElement(event.currentTarget, event.currentTarget.form!) };
+    const input = props.type === "password" ? <PasswordInput {...shared} {...props} /> : <input {...shared} {...props} />;
+    return <label htmlFor={`auth-${name}`}>{title}{input}{errors[name] && <small className="fieldError" id={`auth-${name}-error`} role="alert">{errors[name]}</small>}</label>;
+  };
 
   return <form className="authForm" onSubmit={submit} noValidate>
     {mode === "register" && <div className="twoCols">{field("first_name", "نام")}{field("last_name", "نام خانوادگی")}</div>}

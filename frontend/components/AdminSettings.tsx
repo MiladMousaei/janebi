@@ -4,6 +4,7 @@ import { KeyRound, Save, UserRound } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { API_URL } from "../lib/api";
 import AdminShell from "./AdminShell";
+import PasswordInput from "./PasswordInput";
 
 type Profile = { first_name: string; last_name: string; email: string; phone: string };
 const emptyProfile: Profile = { first_name: "", last_name: "", email: "", phone: "" };
@@ -49,7 +50,7 @@ export default function AdminSettings() {
         <button className="button primary" disabled={loading}><Save size={18} /> ذخیره تغییرات</button>
       </form>
       <form className="adminSettingsCard security" onSubmit={changePassword}><header><span><KeyRound /></span><div><h2>تغییر رمز عبور</h2><p>برای امنیت بیشتر، یک رمز حداقل ۸ کاراکتری انتخاب کنید.</p></div></header>
-        <label>رمز فعلی<input type="password" required value={passwords.old_password} onChange={e => setPasswords({ ...passwords, old_password: e.target.value })} /></label><label>رمز جدید<input type="password" minLength={8} required value={passwords.new_password} onChange={e => setPasswords({ ...passwords, new_password: e.target.value })} /></label>
+        <label>رمز فعلی<PasswordInput required autoComplete="current-password" value={passwords.old_password} onChange={e => setPasswords({ ...passwords, old_password: e.target.value })} /></label><label>رمز جدید<PasswordInput minLength={8} required autoComplete="new-password" value={passwords.new_password} onChange={e => setPasswords({ ...passwords, new_password: e.target.value })} /></label>
         <button className="button dark" disabled={loading}><KeyRound size={18} /> به‌روزرسانی رمز</button>
       </form>
     </div>
