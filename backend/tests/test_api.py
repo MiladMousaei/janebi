@@ -1,6 +1,6 @@
 import pytest
 from django.utils import timezone
-from apps.commerce.models import Coupon
+from apps.commerce.models import Coupon, Notification
 from apps.users.models import User
 
 @pytest.mark.django_db
@@ -48,6 +48,17 @@ def test_checkout_decreases_inventory_and_order_is_private(api, user, checkout_d
     other = User.objects.create_user(email="other@test.com", phone="09123333333", password="StrongPass123!")
     api.force_authenticate(other)
     assert api.get(f"/api/v1/orders/{response.data['order_number']}/").status_code == 404
+
+@pytest.mark.django_db
+def test_checkout_notifies_active_admins(api, user, checkout_data):
+    admin = User.objects.create_user(
+        email="orders-admin@test.com", phone="09126666666", password="StrongPass123!", is_staff=True
+    )
+    api.force_authenticate(user)
+    response = api.post("/api/v1/orders/checkout/", checkout_data, format="json")
+    assert response.status_code == 201
+    notification = Notification.objects.get(user=admin, kind="order_created")
+    assert response.data["order_number"] in notification.message
 
 @pytest.mark.django_db
 def test_mock_payment(api, user, checkout_data):

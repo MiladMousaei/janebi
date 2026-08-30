@@ -53,7 +53,19 @@ class CheckoutSerializer(serializers.Serializer):
         return value
     def create(self, validated_data):
         user = self.context["request"].user
-        return create_order(user=user, address=Address.objects.get(pk=validated_data["address_id"], user=user), shipping_method=ShippingMethod.objects.get(pk=validated_data["shipping_method_id"], is_active=True), coupon_code=validated_data.get("coupon_code", ""))
+        order = create_order(user=user, address=Address.objects.get(pk=validated_data["address_id"], user=user), shipping_method=ShippingMethod.objects.get(pk=validated_data["shipping_method_id"], is_active=True), coupon_code=validated_data.get("coupon_code", ""))
+        from apps.users.models import User
+        customer_name = user.get_full_name() or user.phone or user.email or "مشتری"
+        Notification.objects.bulk_create([
+            Notification(
+                user=admin,
+                kind="order_created",
+                title="سفارش جدید ثبت شد",
+                message=f"سفارش {order.order_number} توسط {customer_name} ثبت شد.",
+            )
+            for admin in User.objects.filter(is_staff=True, is_active=True).exclude(pk=user.pk)
+        ])
+        return order
 
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta: model = Payment; fields = ["id", "order", "amount", "provider", "authority", "transaction_id", "status", "created_at", "paid_at"]

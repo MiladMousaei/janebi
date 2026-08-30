@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { API_URL } from "../lib/api";
+import AdminNotificationCenter from "./AdminNotificationCenter";
 
 type NavLink = { href: string; label: string; icon: LucideIcon };
 const groups: { label: string; links: NavLink[] }[] = [
@@ -78,7 +79,7 @@ export default function AdminShell({ children, title, eyebrow = "مرکز کنت
     <main className="adminMain">
       <header className="adminTopbar">
         <button className="adminMenu" onClick={() => setMenuOpen(true)} aria-label="نمایش منو"><Menu size={22} /></button>
-        <div className="adminHead"><div><span>{eyebrow}</span><h1>{title}</h1></div>{action}</div>
+        <div className="adminHead"><div><span>{eyebrow}</span><h1>{title}</h1></div><div className="adminHeadActions"><AdminNotificationCenter />{action}</div></div>
         <Link className="adminIdentity" href="/admin/settings" aria-label="ویرایش اطلاعات مدیر">
           <span><CircleUserRound size={22} /></span><div><b>مدیر فروشگاه</b><small>ویرایش حساب</small></div>
         </Link>

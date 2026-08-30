@@ -43,7 +43,12 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.User"
-CORS_ALLOWED_ORIGINS = [x.strip() for x in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if x.strip()]
+CORS_ALLOWED_ORIGINS = list(dict.fromkeys([
+    *[x.strip() for x in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if x.strip()],
+    "https://janebi-store.onrender.com",
+    "https://testisite1.shop",
+    "https://www.testisite1.shop",
+]))
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")

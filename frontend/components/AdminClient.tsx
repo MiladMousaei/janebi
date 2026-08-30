@@ -51,16 +51,6 @@ export default function AdminClient({ view = "dashboard" }: { view?: string }) {
     (!query.trim() || `${product.name} ${product.sku} ${product.brand.name}`.toLowerCase().includes(query.trim().toLowerCase()))
   ), [products, query, statusFilter]);
 
-  async function toggle(product: Product) {
-    const response = await fetch(`${API_URL}/products/${product.slug}/`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ is_active: !product.is_active }),
-    });
-    setMsg(response.ok ? "وضعیت محصول به‌روزرسانی شد" : "تغییر وضعیت انجام نشد");
-    if (response.ok) await load();
-  }
-
   async function remove(product: Product) {
     if (!window.confirm(`محصول «${product.name}» برای همیشه حذف شود؟ این عملیات قابل بازگشت نیست.`)) return;
     const response = await fetch(`${API_URL}/products/${product.slug}/`, {
@@ -89,8 +79,8 @@ export default function AdminClient({ view = "dashboard" }: { view?: string }) {
         <div className="adminProduct"><span><ProductVisual name={product.name} slug={product.slug} image={product.primary_image} decorative /></span><div><b>{product.name}</b><small>{product.sku}</small></div></div>
         <div><b>{product.category.name}</b><small>{product.brand.name}</small></div><strong>{formatPrice(product.base_price)}</strong>
         <span className={product.total_stock ? "stockGood" : "stockBad"}>{product.total_stock ? `${product.total_stock} عدد` : "ناموجود"}</span>
-        <div className="productStatusActions"><button className={`statusPill ${product.is_active ? "on" : "off"}`} onClick={() => toggle(product)}>{product.is_active ? "فعال" : "غیرفعال"}</button><button className="deleteAction" aria-label={`حذف ${product.name}`} title="حذف محصول" onClick={() => void remove(product)}><Trash2 aria-hidden="true" /></button></div>
-        <div className="rowActions"><Link href={`/admin/products/${product.id}`}>ویرایش</Link><a href={`/product/${product.slug}`} target="_blank" rel="noreferrer">نمایش</a></div>
+        <div className="productStatusActions"><span className={`statusPill ${product.is_active ? "on" : "off"}`}>{product.is_active ? "فعال" : "غیرفعال"}</span></div>
+        <div className="rowActions"><Link href={`/admin/products/${product.id}`}>ویرایش</Link><a href={`/product/${product.slug}`} target="_blank" rel="noreferrer">نمایش</a><button className="deleteAction rowDelete" aria-label={`حذف ${product.name}`} title="حذف محصول" onClick={() => void remove(product)}><Trash2 aria-hidden="true" /><span>حذف</span></button></div>
       </article>)}
       {!filtered.length && <div className="adminEmpty">محصولی با این مشخصات پیدا نشد.</div>}
     </div>}
