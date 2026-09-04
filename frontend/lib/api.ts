@@ -1,8 +1,16 @@
 import type { Brand, Category, HomeData, Paginated, StoreConfiguration } from "./types";
-const internalApi = process.env.INTERNAL_API_URL || (process.env.INTERNAL_API_HOSTPORT ? `http://${process.env.INTERNAL_API_HOSTPORT}/api/v1` : "http://127.0.0.1:8000/api/v1");
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window === "undefined" ? internalApi : "/api/v1");
+
+const publicApi = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+const serverApi = process.env.INTERNAL_API_URL?.replace(/\/$/, "")
+  || publicApi
+  || (process.env.INTERNAL_API_HOSTPORT ? `http://${process.env.INTERNAL_API_HOSTPORT}/api/v1` : "http://127.0.0.1:8000/api/v1");
+
+// Browser requests stay on the storefront domain. This lets the Next.js proxy
+// wake the Render API and avoids CORS/cookie differences on custom domains.
+export const API_URL = typeof window === "undefined" ? serverApi : "/api/v1";
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, { ...options, headers: { "Content-Type": "application/json", ...options.headers }, cache: "no-store", signal: options.signal || AbortSignal.timeout(45_000) });
+  const timeout = typeof window === "undefined" ? 15_000 : 45_000;
+  const response = await fetch(`${API_URL}${path}`, { ...options, headers: { "Content-Type": "application/json", ...options.headers }, cache: "no-store", signal: options.signal || AbortSignal.timeout(timeout) });
   if (!response.ok) throw new Error(`API error ${response.status}`);
   return response.json() as Promise<T>;
 }

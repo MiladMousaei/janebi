@@ -43,11 +43,8 @@ services:
     dockerContext: ./frontend
     healthCheckPath: /
     envVars:
-      - key: INTERNAL_API_HOSTPORT
-        fromService:
-          type: web
-          name: janebi-api
-          property: hostport
+      - key: INTERNAL_API_URL
+        value: https://janebi-api.onrender.com/api/v1
       - key: NEXT_PUBLIC_API_URL
         value: https://janebi-api.onrender.com/api/v1
       - key: NEXT_PUBLIC_SITE_URL

@@ -5,7 +5,10 @@ type Context = { params: Promise<{ path: string[] }> };
 
 async function proxy(request: NextRequest, { params }: Context) {
   const { path } = await params;
-  const base = process.env.INTERNAL_API_URL || (process.env.INTERNAL_API_HOSTPORT ? `http://${process.env.INTERNAL_API_HOSTPORT}/api/v1` : "http://127.0.0.1:8000/api/v1");
+  const publicApi = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+  const base = process.env.INTERNAL_API_URL?.replace(/\/$/, "")
+    || publicApi
+    || (process.env.INTERNAL_API_HOSTPORT ? `http://${process.env.INTERNAL_API_HOSTPORT}/api/v1` : "http://127.0.0.1:8000/api/v1");
   const headers = new Headers();
   for (const key of ["authorization", "content-type", "accept"]) {
     const value = request.headers.get(key);
@@ -16,7 +19,7 @@ async function proxy(request: NextRequest, { params }: Context) {
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {
       const response = await fetch(`${base}/${path.join("/")}/${request.nextUrl.search}`, {
-        method: request.method, headers, body, redirect: "manual", cache: "no-store", signal: AbortSignal.timeout(55_000),
+        method: request.method, headers, body, redirect: "manual", cache: "no-store", signal: AbortSignal.timeout(75_000),
       });
       if (response.status >= 500 && attempt + 1 < attempts) { await new Promise(resolve => setTimeout(resolve, 900)); continue; }
       const outputHeaders = new Headers();
@@ -24,6 +27,7 @@ async function proxy(request: NextRequest, { params }: Context) {
         const value = response.headers.get(key);
         if (value) outputHeaders.set(key, value);
       }
+      outputHeaders.set("Cache-Control", "no-store");
       return new Response(response.body, { status: response.status, headers: outputHeaders });
     } catch {
       if (attempt + 1 < attempts) { await new Promise(resolve => setTimeout(resolve, 900)); continue; }
